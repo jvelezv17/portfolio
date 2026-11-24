@@ -38,7 +38,7 @@ export const proyectosPersonales = [
     descripcion:
       'Planificador de rutas de domicilios (proyecto académico): calcula rutas con Dijkstra y compara cuatro estrategias de entrega. Patrones Strategy, Observer, Command e Iterator, con pruebas automatizadas y despliegue en GitHub Pages.',
     tecnologias: ['JavaScript', 'HTML', 'CSS', 'GitHub Pages'],
-    url: 'https://github.com/jvelezv17', // [POR COMPLETAR] enlace directo al repo de RutaExpress
+    url: 'https://github.com/jvelezv17/Estrategias-de-navegaci-n-en-la-arquitectura-de-software',
   },
   {
     nombre: 'Este portfolio',
