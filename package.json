@@ -12,7 +12,8 @@
     "pendientes": "node scripts/pendientes.mjs"
   },
   "dependencies": {
-    "astro": "^7.4.13"
+    "astro": "^7.4.13",
+    "simple-icons": "^16.38.1"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.14.1",

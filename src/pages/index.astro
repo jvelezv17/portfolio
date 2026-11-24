@@ -1,24 +1,61 @@
 ---
+import { Image } from 'astro:assets';
 import Base from '../layouts/Base.astro';
-import { perfil, formacion, idiomas, proyectosPersonales } from '../data/perfil';
+import Cintas from '../components/Cintas.astro';
+import Icono from '../components/Icono.astro';
+import avatar from '../assets/avatar.png';
+import { perfil, formacion, idiomas, proyectosPersonales, cifras } from '../data/perfil';
 import { proyectos } from '../data/proyectos';
 import { experiencia } from '../data/experiencia';
-import { stack } from '../data/stack';
+import { stack, formaDeTrabajo } from '../data/stack';
 
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 ---
 
 <Base>
-  <section class="hero contenedor" aria-labelledby="hero-titulo">
-    <p class="eyebrow">{perfil.rol}</p>
-    <h1 id="hero-titulo">{perfil.nombre}</h1>
-    <p class="frase">{perfil.frase}</p>
-    <p class="muted resumen">{perfil.resumen}</p>
-    <div class="acciones">
-      <a class="boton primario" href="#proyectos">Ver casos de estudio</a>
-      <a class="boton" href="#contacto">Contactarme</a>
-      {perfil.cv && <a class="boton" href={perfil.cv} download>Descargar CV</a>}
+  <section class="hero" aria-labelledby="hero-titulo">
+    <Cintas />
+    <div class="contenedor hero-grid">
+      <div class="hero-texto">
+        <p class="eyebrow">{perfil.rol}</p>
+        <h1 id="hero-titulo" class="degradado">{perfil.nombre}</h1>
+        <p class="frase">{perfil.frase}</p>
+        <p class="muted resumen">{perfil.resumen}</p>
+        <div class="acciones">
+          <a class="boton primario" href="#proyectos">Ver casos de estudio</a>
+          <a class="boton" href="#contacto">Contactarme</a>
+          {perfil.cv && <a class="boton" href={perfil.cv} download>Descargar CV</a>}
+        </div>
+      </div>
+
+      <div class="hero-avatar">
+        <div class="anillo">
+          <Image
+            src={avatar}
+            alt={`Avatar de ${perfil.nombre}`}
+            width={320}
+            height={352}
+            loading="eager"
+            class="foto"
+          />
+        </div>
+        <div class="terminal vidrio" aria-label="Resultado de las pruebas de este sitio">
+          <p><span class="prompt">$</span> npx playwright test</p>
+          <p class="ok">✓ todas las pruebas pasan</p>
+        </div>
+      </div>
     </div>
+
+    <ul class="contenedor cifras">
+      {
+        cifras.map((c) => (
+          <li class="vidrio">
+            <strong class="degradado">{c.valor}</strong>
+            <span class="muted">{c.texto}</span>
+          </li>
+        ))
+      }
+    </ul>
   </section>
 
   <section id="proyectos" class="seccion" aria-labelledby="proyectos-titulo">
@@ -31,8 +68,11 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       </p>
       <ul class="tarjetas">
         {
-          proyectos.map((p) => (
-            <li class="tarjeta" data-testid="tarjeta-proyecto">
+          proyectos.map((p, i) => (
+            <li class="tarjeta vidrio revelar" data-testid="tarjeta-proyecto">
+              <span class="numero" aria-hidden="true">
+                {String(i + 1).padStart(2, '0')}
+              </span>
               <h3>
                 <a href={`${base}/proyectos/${p.slug}/`}>{p.titulo}</a>
               </h3>
@@ -42,6 +82,9 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
                   <li class="chip">{e}</li>
                 ))}
               </ul>
+              <span class="leer" aria-hidden="true">
+                Leer caso →
+              </span>
             </li>
           ))
         }
@@ -51,7 +94,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       <ul class="tarjetas">
         {
           proyectosPersonales.map((p) => (
-            <li class="tarjeta">
+            <li class="tarjeta vidrio revelar">
               <h4>
                 <a href={p.url} target="_blank" rel="noopener noreferrer">
                   {p.nombre} <span aria-hidden="true">↗</span>
@@ -76,26 +119,28 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       <h2 id="experiencia-titulo">Experiencia</h2>
       <ol class="linea">
         {
-          experiencia.map((t) => (
-            <li class="hito" data-testid="trabajo">
-              <p class="fechas">
-                {t.desde} – {t.hasta}
-              </p>
-              <h3>{t.rol}</h3>
-              <p class="empresa">{t.empresa}</p>
-              <ul>
-                {t.logros.map((l) => (
-                  <li>{l}</li>
-                ))}
-              </ul>
+          experiencia.map((t, i) => (
+            <li class:list={['hito', 'revelar', { actual: i === 0 }]} data-testid="trabajo">
+              <div class="vidrio caja">
+                <p class="fechas">
+                  {t.desde} – {t.hasta}
+                </p>
+                <h3>{t.rol}</h3>
+                <p class="empresa">{t.empresa}</p>
+                <ul>
+                  {t.logros.map((l) => (
+                    <li>{l}</li>
+                  ))}
+                </ul>
+              </div>
             </li>
           ))
         }
       </ol>
 
       <div class="dos-columnas">
-        <div>
-          <h3 class="subtitulo">Formación</h3>
+        <div class="vidrio caja revelar">
+          <h3 class="subtitulo-chico">Formación</h3>
           <ul class="lista-simple">
             {
               formacion.map((f) => (
@@ -110,8 +155,8 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
             }
           </ul>
         </div>
-        <div>
-          <h3 class="subtitulo">Idiomas</h3>
+        <div class="vidrio caja revelar">
+          <h3 class="subtitulo-chico">Idiomas</h3>
           <ul class="lista-simple">
             {idiomas.map((i) => <li>{i}</li>)}
           </ul>
@@ -127,107 +172,241 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       <div class="stack">
         {
           stack.map((g) => (
-            <div class="grupo">
+            <div class="grupo revelar">
               <h3>{g.grupo}</h3>
-              <ul class="chips">
-                {g.items.map((i) => (
-                  <li class="chip">{i}</li>
+              <ul class="iconos">
+                {g.items.map((t) => (
+                  <li class="tec vidrio" data-testid="tecnologia">
+                    <Icono slug={t.icono} nombre={t.nombre} mono={t.mono} />
+                    <span>{t.nombre}</span>
+                  </li>
                 ))}
               </ul>
             </div>
           ))
         }
       </div>
+      <div class="forma revelar">
+        <h3>Forma de trabajo</h3>
+        <ul class="chips">
+          {formaDeTrabajo.map((f) => <li class="chip">{f}</li>)}
+        </ul>
+      </div>
     </div>
   </section>
 
   <section id="contacto" class="seccion" aria-labelledby="contacto-titulo">
     <div class="contenedor">
-      <p class="eyebrow">Hablemos</p>
-      <h2 id="contacto-titulo">Contacto</h2>
-      <p class="muted">¿Buscas a alguien que automatice tus pruebas o que arme un área de QA? Escríbeme.</p>
-      <div class="acciones">
-        {perfil.email && <a class="boton primario" href={`mailto:${perfil.email}`}>{perfil.email}</a>}
-        {
-          perfil.linkedin && (
-            <a class="boton" href={perfil.linkedin} target="_blank" rel="noopener noreferrer">
-              LinkedIn
-            </a>
-          )
-        }
-        {
-          perfil.github && (
-            <a class="boton" href={perfil.github} target="_blank" rel="noopener noreferrer">
-              GitHub
-            </a>
-          )
-        }
+      <div class="panel-contacto vidrio revelar">
+        <p class="eyebrow">Hablemos</p>
+        <h2 id="contacto-titulo">Contacto</h2>
+        <p class="muted">¿Buscas a alguien que automatice tus pruebas o que arme un área de QA? Escríbeme.</p>
+        <div class="acciones">
+          {perfil.email && <a class="boton primario" href={`mailto:${perfil.email}`}>{perfil.email}</a>}
+          {
+            perfil.linkedin && (
+              <a class="boton" href={perfil.linkedin} target="_blank" rel="noopener noreferrer">
+                LinkedIn
+              </a>
+            )
+          }
+          {
+            perfil.github && (
+              <a class="boton" href={perfil.github} target="_blank" rel="noopener noreferrer">
+                <Icono slug="siGithub" nombre="GitHub" tamano={18} />
+                GitHub
+              </a>
+            )
+          }
+        </div>
       </div>
     </div>
   </section>
 </Base>
 
 <style>
+  /* ---------- Hero ---------- */
   .hero {
-    padding: 96px 20px 80px;
+    position: relative;
+    padding: 110px 0 40px;
+    overflow: hidden;
+  }
+  .hero-grid {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    align-items: center;
+    gap: 48px;
   }
   .hero h1 {
-    font-size: clamp(2.4rem, 7vw, 4rem);
-    margin: 0 0 1rem;
+    font-size: clamp(2.6rem, 7vw, 4.6rem);
+    margin: 0 0 1.1rem;
   }
   .frase {
-    font-size: clamp(1.2rem, 2.6vw, 1.5rem);
-    max-width: 34ch;
+    font-size: clamp(1.2rem, 2.6vw, 1.55rem);
+    max-width: 30ch;
     margin: 0 0 1rem;
     font-weight: 500;
   }
   .resumen {
-    max-width: 62ch;
+    max-width: 58ch;
   }
   .acciones {
     display: flex;
     flex-wrap: wrap;
     gap: 12px;
-    margin-top: 1.5rem;
+    margin-top: 1.75rem;
   }
+  .hero-avatar {
+    position: relative;
+    justify-self: center;
+    width: min(100%, 340px);
+  }
+  .anillo {
+    position: relative;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    padding: 6px;
+    background: conic-gradient(from 200deg, #3b1fb8, #b9a6ff, #d8b4fe, #6d4aff, #3b1fb8);
+    box-shadow:
+      0 0 60px rgba(124, 92, 255, 0.55),
+      0 0 140px rgba(124, 92, 255, 0.25);
+    animation: girar-brillo 8s linear infinite;
+  }
+  .anillo::after {
+    content: '';
+    position: absolute;
+    inset: -18px;
+    border-radius: 50%;
+    border: 1px solid rgba(185, 166, 255, 0.25);
+  }
+  .foto {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 20%;
+    border-radius: 50%;
+    background: var(--surface-solid);
+  }
+  @keyframes girar-brillo {
+    50% {
+      box-shadow:
+        0 0 80px rgba(160, 120, 255, 0.7),
+        0 0 170px rgba(124, 92, 255, 0.3);
+    }
+  }
+  .terminal {
+    position: absolute;
+    left: -36px;
+    bottom: -8px;
+    padding: 10px 16px;
+    font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+    font-size: 0.8rem;
+    line-height: 1.5;
+    border-radius: 12px;
+    animation: flotar-y 6s ease-in-out infinite alternate;
+  }
+  .terminal p {
+    margin: 0;
+  }
+  .prompt {
+    color: var(--violeta-300);
+  }
+  .ok {
+    color: #7ee2b8;
+  }
+  @keyframes flotar-y {
+    to {
+      transform: translateY(-10px);
+    }
+  }
+  .cifras {
+    position: relative;
+    z-index: 1;
+    list-style: none;
+    margin-top: 72px;
+    margin-bottom: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+    gap: 14px;
+  }
+  .cifras li {
+    padding: 18px 22px;
+    display: flex;
+    flex-direction: column;
+  }
+  .cifras strong {
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    font-size: 2rem;
+    line-height: 1.1;
+  }
+
+  /* ---------- Tarjetas ---------- */
   .nota {
     max-width: 70ch;
-    margin-top: -0.5rem;
   }
   .tarjetas {
     list-style: none;
     padding: 0;
-    margin: 2rem 0 0;
+    margin: 2.25rem 0 0;
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr));
     gap: 18px;
   }
   .tarjeta {
     position: relative;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 22px;
+    padding: 26px;
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    transition: border-color 0.15s, transform 0.15s;
+    gap: 12px;
+    transition:
+      border-color 0.25s,
+      transform 0.25s,
+      box-shadow 0.25s;
+  }
+  .tarjeta::before {
+    /* borde con degradado que se enciende al pasar el mouse */
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg, var(--lila-300), transparent 40%, transparent 60%, var(--violeta-500));
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.25s;
+    pointer-events: none;
   }
   .tarjeta:hover {
-    border-color: var(--accent);
-    transform: translateY(-2px);
+    transform: translateY(-4px);
+    box-shadow: 0 18px 50px rgba(80, 50, 200, 0.35);
+  }
+  .tarjeta:hover::before {
+    opacity: 1;
+  }
+  .numero {
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: var(--violeta-300);
+    letter-spacing: 0.1em;
   }
   .tarjeta h3,
   .tarjeta h4 {
     margin: 0;
-    font-size: 1.1rem;
+    font-size: 1.2rem;
   }
   .tarjeta h3 a,
   .tarjeta h4 a {
     color: var(--text);
     text-decoration: none;
   }
-  /* toda la tarjeta es clicable */
   .tarjeta h3 a::after,
   .tarjeta h4 a::after {
     content: '';
@@ -238,57 +417,90 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     margin: 0;
     flex: 1;
   }
-  .subtitulo {
-    margin: 3rem 0 0;
-    font-size: 1.2rem;
+  .leer {
+    color: var(--violeta-300);
+    font-weight: 600;
+    font-size: 0.9rem;
+    transition: transform 0.25s;
   }
+  .tarjeta:hover .leer {
+    transform: translateX(4px);
+  }
+  .subtitulo {
+    margin: 3.5rem 0 0;
+    font-size: 1.3rem;
+  }
+
+  /* ---------- Línea de tiempo ---------- */
   .linea {
+    position: relative;
     list-style: none;
-    padding: 0;
-    margin: 0;
-    border-left: 2px solid var(--border);
+    padding: 0 0 0 34px;
+    margin: 2rem 0 0;
+  }
+  .linea::before {
+    content: '';
+    position: absolute;
+    left: 8px;
+    top: 8px;
+    bottom: 8px;
+    width: 2px;
+    background: linear-gradient(to bottom, var(--lila-300), var(--violeta-500) 40%, rgba(109, 74, 255, 0.1));
+    box-shadow: 0 0 12px rgba(124, 92, 255, 0.6);
   }
   .hito {
     position: relative;
-    padding: 0 0 2rem 28px;
+    padding-bottom: 20px;
   }
   .hito::before {
     content: '';
     position: absolute;
-    left: -8px;
-    top: 6px;
+    left: -32px;
+    top: 26px;
     width: 14px;
     height: 14px;
     border-radius: 50%;
     background: var(--bg);
-    border: 3px solid var(--accent);
+    border: 2px solid var(--violeta-300);
+  }
+  .hito.actual::before {
+    background: var(--lila-300);
+    box-shadow: 0 0 16px 4px rgba(190, 150, 255, 0.75);
+  }
+  .caja {
+    padding: 22px 24px;
   }
   .hito h3 {
-    margin: 0;
-    font-size: 1.15rem;
+    margin: 0.2rem 0 0;
+    font-size: 1.25rem;
   }
   .fechas {
     margin: 0;
-    font-size: 0.85rem;
+    font-size: 0.82rem;
     color: var(--muted);
     font-weight: 600;
+    letter-spacing: 0.04em;
   }
   .empresa {
-    margin: 0 0 0.5rem;
-    color: var(--accent);
+    margin: 0 0 0.6rem;
+    color: var(--violeta-300);
     font-weight: 600;
   }
   .hito ul {
     margin: 0;
     padding-left: 1.1rem;
+    display: grid;
+    gap: 4px;
   }
   .dos-columnas {
+    margin-top: 28px;
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
-    gap: 24px;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+    gap: 18px;
   }
-  .dos-columnas .subtitulo {
-    margin-top: 1.5rem;
+  .subtitulo-chico {
+    margin: 0;
+    font-size: 1.15rem;
   }
   .lista-simple {
     list-style: none;
@@ -297,13 +509,91 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     display: grid;
     gap: 12px;
   }
+
+  /* ---------- Stack ---------- */
   .stack {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
-    gap: 24px;
+    gap: 34px;
+    margin-top: 2rem;
   }
-  .grupo h3 {
-    font-size: 1rem;
-    margin: 0 0 0.6rem;
+  .grupo h3,
+  .forma h3 {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--muted);
+    margin: 0 0 0.9rem;
+  }
+  .iconos {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 150px), 1fr));
+    gap: 12px;
+  }
+  .tec {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    border-radius: 14px;
+    color: var(--violeta-300);
+    transition:
+      color 0.2s,
+      border-color 0.2s,
+      box-shadow 0.2s,
+      transform 0.2s;
+  }
+  .tec span {
+    color: var(--text);
+    font-weight: 500;
+    font-size: 0.95rem;
+  }
+  .tec:hover {
+    color: var(--lila-300);
+    border-color: var(--border-strong);
+    box-shadow: var(--glow);
+    transform: translateY(-2px);
+  }
+  .forma {
+    margin-top: 34px;
+  }
+
+  /* ---------- Contacto ---------- */
+  .panel-contacto {
+    position: relative;
+    overflow: hidden;
+    padding: clamp(28px, 6vw, 56px);
+    text-align: center;
+    background:
+      radial-gradient(600px 260px at 50% 0%, rgba(124, 92, 255, 0.35), transparent 70%),
+      var(--surface);
+  }
+  .panel-contacto .eyebrow {
+    justify-content: center;
+  }
+  .panel-contacto .acciones {
+    justify-content: center;
+  }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 820px) {
+    .hero {
+      padding-top: 64px;
+    }
+    .hero-grid {
+      grid-template-columns: 1fr;
+    }
+    .hero-avatar {
+      order: -1;
+      width: min(70%, 240px);
+    }
+    .terminal {
+      left: auto;
+      right: -20px;
+      bottom: -14px;
+      font-size: 0.72rem;
+    }
   }
 </style>

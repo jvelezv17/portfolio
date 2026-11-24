@@ -42,6 +42,20 @@ test.describe('Carga', () => {
     await expect(page.getByTestId('tarjeta-proyecto')).toHaveCount(proyectos.length);
     await expect(page.getByTestId('trabajo').first()).toBeVisible();
   });
+
+  test('el avatar carga y cada tecnología del stack tiene icono', async ({ page }) => {
+    await page.goto('/');
+    const avatar = page.getByRole('img', { name: `Avatar de ${perfil.nombre}` });
+    await expect(avatar).toBeVisible();
+    // naturalWidth > 0 = la imagen realmente descargó (no un ícono roto)
+    expect(await avatar.evaluate((img: HTMLImageElement) => img.naturalWidth)).toBeGreaterThan(0);
+
+    const tecnologias = page.getByTestId('tecnologia');
+    expect(await tecnologias.count()).toBeGreaterThan(10);
+    for (const t of await tecnologias.all()) {
+      await expect(t.locator('svg.icono, .icono.monograma')).toHaveCount(1);
+    }
+  });
 });
 
 test.describe('Navegación', () => {

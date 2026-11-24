@@ -17,6 +17,13 @@ export const perfil = {
   repoSitio: 'https://github.com/jvelezv17/portfolio', // cámbialo si el repo se llama distinto
 };
 
+// Cifras destacadas bajo el inicio. Solo números que puedas defender en una entrevista.
+export const cifras = [
+  { valor: '2,5+ años', texto: 'en QA y automatización de pruebas' },
+  { valor: '40+', texto: 'instancias de un SaaS cubiertas por una sola suite' },
+  { valor: '3', texto: 'frameworks en producción: Playwright, Cypress y Selenium' },
+];
+
 export const formacion = [
   { titulo: 'Ingeniería de Software', lugar: 'Universidad Tecnológica del Oriente', fechas: 'Último semestre (en curso)' },
   { titulo: 'Tecnólogo en Análisis y Desarrollo de Software (ADSO)', lugar: 'SENA', fechas: 'Mar 2023 – Sep 2025' },

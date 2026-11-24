@@ -1,0 +1,52 @@
+---
+// Icono de una tecnología. Usa la librería simple-icons (logos en SVG, licencia CC0).
+// Si la tecnología no tiene logo en la librería, muestra un monograma (ej. "PW").
+import * as iconos from 'simple-icons';
+
+interface Props {
+  slug?: string; // ej. 'siCypress' — ver https://simpleicons.org
+  nombre: string;
+  mono?: string; // monograma a mano, ej. 'PW'
+  tamano?: number;
+}
+
+const { slug, nombre, mono, tamano = 28 } = Astro.props;
+const icono = slug ? (iconos as Record<string, { path: string } | undefined>)[slug] : undefined;
+const monograma = mono ?? nombre
+  .split(/[\s.\-()]+/)
+  .filter(Boolean)
+  .slice(0, 2)
+  .map((p) => p[0])
+  .join('')
+  .toUpperCase();
+---
+
+{
+  icono ? (
+    <svg class="icono" viewBox="0 0 24 24" width={tamano} height={tamano} aria-hidden="true">
+      <path d={icono.path} fill="currentColor" />
+    </svg>
+  ) : (
+    <span class="icono monograma" style={`--t:${tamano}px`} aria-hidden="true">
+      {monograma}
+    </span>
+  )
+}
+
+<style>
+  .icono {
+    flex: none;
+  }
+  .monograma {
+    display: inline-grid;
+    place-items: center;
+    width: var(--t);
+    height: var(--t);
+    border-radius: 8px;
+    border: 1.5px solid currentColor;
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    font-size: calc(var(--t) * 0.42);
+    font-weight: 700;
+    letter-spacing: 0;
+  }
+</style>
