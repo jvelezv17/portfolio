@@ -359,3 +359,22 @@ test.describe('Modo liviano (sin aceleración por hardware)', () => {
     await expect(page.locator('html')).not.toHaveClass(/liviano/);
   });
 });
+
+test.describe('Al compartir el link', () => {
+  test('cada página trae la imagen para LinkedIn/WhatsApp/X y mide 1200×630', async ({ page, request }) => {
+    for (const ruta of ['/', `/proyectos/${proyectos[0].slug}/`]) {
+      await page.goto(ruta);
+      const og = await page.locator('meta[property="og:image"]').getAttribute('content');
+      expect(og, `falta og:image en ${ruta}`).toMatch(/^https:\/\/.+\/og\.png$/); // debe ser URL absoluta
+      await expect(page.locator('meta[name="twitter:card"]')).toHaveAttribute('content', 'summary_large_image');
+      await expect(page.locator('meta[property="og:image:alt"]')).toHaveAttribute('content', /.+/);
+    }
+    // el archivo existe y es un PNG de 1200×630 (ancho y alto vienen en la cabecera IHDR)
+    const res = await request.get('/og.png');
+    expect(res.status()).toBe(200);
+    const png = await res.body();
+    expect(png.readUInt32BE(16), 'ancho').toBe(1200);
+    expect(png.readUInt32BE(20), 'alto').toBe(630);
+    expect(png.length, 'pesa demasiado para compartir').toBeLessThan(1024 * 1024);
+  });
+});

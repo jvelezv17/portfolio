@@ -9,7 +9,8 @@
     "preview": "astro preview",
     "test": "playwright test",
     "test:ui": "playwright test --ui",
-    "pendientes": "node scripts/pendientes.mjs"
+    "pendientes": "node scripts/pendientes.mjs",
+    "og": "node scripts/generar-og.mjs"
   },
   "dependencies": {
     "astro": "^7.4.13",

@@ -22,6 +22,7 @@ npm run dev        # abre http://localhost:4321 y se recarga solo al guardar
 | `npm test` | Compila y corre las pruebas Playwright |
 | `npm run test:ui` | Las mismas pruebas, en la interfaz visual de Playwright |
 | `npm run pendientes` | Lista lo que sigue marcado como `[POR COMPLETAR]` |
+| `npm run og` | Regenera `public/og.png`, la imagen que sale al compartir el link (córrelo si cambias nombre, rol, frase o avatar) |
 
 La primera vez que corras las pruebas: `npx playwright install chromium`.
 
