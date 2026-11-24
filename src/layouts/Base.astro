@@ -1,25 +1,37 @@
 ---
 import '../styles/global.css';
-import { perfil } from '../data/perfil';
+import { contenido } from '../data';
+import { textos, rutas, prefijo, type Idioma } from '../i18n';
 import Bicho from '../components/Bicho.astro';
 
 interface Props {
+  idioma?: Idioma;
+  /** Ruta de esta misma página en el otro idioma (para el selector ES | EN y para Google). */
+  alterna?: string;
   titulo?: string;
   descripcion?: string;
   sinBicho?: boolean; // en las páginas de error no sale el bicho del easter egg
   noIndexar?: boolean;
 }
 
-const { titulo, descripcion = perfil.frase, sinBicho = false, noIndexar = false } = Astro.props;
+const { idioma = 'es', titulo, sinBicho = false, noIndexar = false } = Astro.props;
+const otro: Idioma = idioma === 'es' ? 'en' : 'es';
+const alterna = Astro.props.alterna ?? rutas.inicio[otro];
+const { perfil } = contenido(idioma);
+const t = textos[idioma];
+const descripcion = Astro.props.descripcion ?? perfil.frase;
 const tituloCompleto = titulo ? `${titulo} · ${perfil.nombre}` : `${perfil.nombre} · ${perfil.rol}`;
 const canonical = new URL(Astro.url.pathname, Astro.site);
+const urlEs = new URL(idioma === 'es' ? Astro.url.pathname : alterna, Astro.site);
+const urlEn = new URL(idioma === 'en' ? Astro.url.pathname : alterna, Astro.site);
 // imagen al compartir el link (generada con: npm run og). Debe ser una URL absoluta.
-const imagenCompartir = new URL('/og.png', Astro.site);
+const imagenCompartir = new URL(idioma === 'en' ? '/og-en.png' : '/og.png', Astro.site);
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const inicio = `${base}${prefijo(idioma)}/`;
 ---
 
 <!doctype html>
-<html lang="es">
+<html lang={idioma}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -55,13 +67,17 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     <meta name="theme-color" content="#03020a" />
     {noIndexar && <meta name="robots" content="noindex" />}
     <link rel="canonical" href={canonical} />
+    {!noIndexar && <link rel="alternate" hreflang="es" href={urlEs} />}
+    {!noIndexar && <link rel="alternate" hreflang="en" href={urlEn} />}
+    {!noIndexar && <link rel="alternate" hreflang="x-default" href={urlEs} />}
     <link rel="icon" type="image/png" href={`${base}/favicon.png`} />
     <meta property="og:title" content={tituloCompleto} />
     <meta property="og:description" content={descripcion} />
     <meta property="og:type" content="website" />
     <meta property="og:url" content={canonical} />
     <meta property="og:site_name" content={perfil.nombre} />
-    <meta property="og:locale" content="es_CO" />
+    <meta property="og:locale" content={idioma === 'en' ? 'en_US' : 'es_CO'} />
+    <meta property="og:locale:alternate" content={idioma === 'en' ? 'es_CO' : 'en_US'} />
     <meta property="og:image" content={imagenCompartir} />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
@@ -76,17 +92,30 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     />
   </head>
   <body>
-    <a class="saltar" href="#contenido">Saltar al contenido</a>
+    <a class="saltar" href="#contenido">{t.saltar}</a>
     <header class="barra">
-      <nav class="contenedor nav" aria-label="Principal">
-        <a class="marca" href={`${base}/`}>
+      <nav class="contenedor nav" aria-label={idioma === 'en' ? 'Main' : 'Principal'}>
+        <a class="marca" href={inicio}>
           <span class="punto" aria-hidden="true"></span>{perfil.nombre}
         </a>
         <ul>
-          <li><a href={`${base}/#proyectos`}>Proyectos</a></li>
-          <li><a href={`${base}/#experiencia`}>Experiencia</a></li>
-          <li><a href={`${base}/#stack`}>Stack</a></li>
-          <li><a href={`${base}/#contacto`}>Contacto</a></li>
+          <li><a href={`${inicio}#proyectos`}>{t.menu.proyectos}</a></li>
+          <li><a href={`${inicio}#experiencia`}>{t.menu.experiencia}</a></li>
+          <li><a href={`${inicio}#stack`}>{t.menu.stack}</a></li>
+          <li><a href={`${inicio}#contacto`}>{t.menu.contacto}</a></li>
+          <li>
+            <a
+              class="idioma"
+              href={`${base}${alterna}`}
+              hreflang={otro}
+              aria-label={t.cambiarIdioma}
+              data-testid="cambiar-idioma"
+            >
+              <span class:list={[{ activo: idioma === 'es' }]}>ES</span><span class="barra-idioma" aria-hidden="true"
+                >/</span
+              ><span class:list={[{ activo: idioma === 'en' }]}>EN</span>
+            </a>
+          </li>
         </ul>
       </nav>
     </header>
@@ -96,16 +125,16 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     <footer class="pie">
       <div class="contenedor">
         <p class="muted">
-          © {new Date().getFullYear()} {perfil.nombre} · Hecho con Astro y probado con Playwright
+          © {new Date().getFullYear()} {perfil.nombre} · {t.pie}
           {perfil.repoSitio && (
             <>
-              {' '}· <a href={perfil.repoSitio} target="_blank" rel="noopener noreferrer">ver código</a>
+              {' '}· <a href={perfil.repoSitio} target="_blank" rel="noopener noreferrer">{t.verCodigo}</a>
             </>
           )}
         </p>
       </div>
     </footer>
-    {!sinBicho && <Bicho />}
+    {!sinBicho && <Bicho idioma={idioma} />}
 
     <script>
       // Hace aparecer suavemente los elementos .revelar cuando entran en pantalla.
@@ -177,6 +206,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   }
   .nav ul {
     display: flex;
+    align-items: center;
     gap: 22px;
     list-style: none;
     margin: 0;
@@ -193,6 +223,23 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     color: var(--text);
     text-shadow: 0 0 14px rgba(185, 166, 255, 0.8);
   }
+  /* selector de idioma: ES / EN, el actual resaltado */
+  .nav ul a.idioma {
+    display: inline-flex;
+    gap: 4px;
+    padding: 3px 10px;
+    border: 1px solid var(--border-strong);
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+  }
+  .idioma .activo {
+    color: var(--lila-300);
+  }
+  .barra-idioma {
+    opacity: 0.5;
+  }
   .pie {
     border-top: 1px solid var(--border);
     padding: 32px 0;
@@ -203,8 +250,17 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       padding-top: 10px;
       padding-bottom: 10px;
     }
+    .nav {
+      position: relative;
+    }
     .nav ul {
-      gap: 16px;
+      gap: 14px;
+    }
+    /* en móvil el selector ES / EN va arriba a la derecha, junto al nombre */
+    .nav ul li:last-child {
+      position: absolute;
+      right: 20px;
+      top: 10px;
     }
   }
 </style>

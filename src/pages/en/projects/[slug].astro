@@ -1,0 +1,16 @@
+---
+import CasoEstudio from '../../../components/CasoEstudio.astro';
+import { proyectos } from '../../../data/en/proyectos';
+import { proyectos as proyectosEs } from '../../../data/proyectos';
+
+export function getStaticPaths() {
+  return proyectos.map((p, i) => ({
+    params: { slug: p.slug },
+    props: { proyecto: p, siguiente: proyectos[(i + 1) % proyectos.length], equivalente: proyectosEs[i] },
+  }));
+}
+
+const { proyecto, siguiente, equivalente } = Astro.props;
+---
+
+<CasoEstudio idioma="en" proyecto={proyecto} siguiente={siguiente} equivalente={equivalente} />

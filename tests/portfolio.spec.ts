@@ -2,6 +2,8 @@ import { test, expect, type Page } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { proyectos } from '../src/data/proyectos';
 import { perfil } from '../src/data/perfil';
+import { perfil as perfilEn } from '../src/data/en/perfil';
+import { proyectos as proyectosEn } from '../src/data/en/proyectos';
 
 /** Falla la prueba si la página escribe errores en consola o algún recurso propio responde 4xx/5xx. */
 function vigilarErrores(page: Page) {
@@ -387,5 +389,81 @@ test.describe('Al compartir el link', () => {
     expect(png.readUInt32BE(16), 'ancho').toBe(1200);
     expect(png.readUInt32BE(20), 'alto').toBe(630);
     expect(png.length, 'pesa demasiado para compartir').toBeLessThan(1024 * 1024);
+  });
+});
+
+test.describe('Versión en inglés', () => {
+  test('/en/ carga en inglés, con el contenido traducido', async ({ page }) => {
+    const errores = vigilarErrores(page);
+    await page.goto('/en/');
+    await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(perfil.nombre);
+    await expect(page.getByText(perfilEn.frase)).toBeVisible();
+    for (const titulo of ['Experience', 'Stack', 'Contact']) {
+      await expect(page.getByRole('heading', { level: 2, name: titulo })).toBeVisible();
+    }
+    await expect(page.getByTestId('pais')).toContainText('COL · Remote');
+    await expect(page.getByTestId('tarjeta-proyecto')).toHaveCount(proyectosEn.length);
+    expect(errores).toEqual([]);
+  });
+
+  test('no quedan textos de la interfaz en español en /en/', async ({ page }) => {
+    await page.goto('/en/');
+    const texto = await page.locator('body').innerText();
+    for (const frase of ['Casos de estudio', 'Experiencia', 'Contacto', 'Formación', 'Idiomas', 'Leer caso', 'Hablemos', 'Proyectos propios']) {
+      expect(texto, `quedó "${frase}" sin traducir`).not.toContain(frase);
+    }
+  });
+
+  test('el selector ES / EN lleva a la misma página en el otro idioma', async ({ page }) => {
+    await page.goto('/');
+    await page.getByTestId('cambiar-idioma').click();
+    await expect(page).toHaveURL(/\/en\/$/);
+    await page.getByTestId('cambiar-idioma').click();
+    await expect(page).toHaveURL(/\/$/);
+
+    // en un caso de estudio, cambia al MISMO caso traducido
+    await page.goto(`/proyectos/${proyectos[2].slug}/`);
+    await page.getByTestId('cambiar-idioma').click();
+    await expect(page).toHaveURL(new RegExp(`/en/projects/${proyectosEn[2].slug}/$`));
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(proyectosEn[2].titulo);
+    for (const bloque of ['The problem', 'What I did', 'Outcome']) {
+      await expect(page.getByRole('heading', { level: 2, name: bloque })).toBeVisible();
+    }
+  });
+
+  test('Google sabe que son la misma página en dos idiomas (hreflang) y cada una tiene su imagen', async ({ page, request }) => {
+    await page.goto('/en/');
+    await expect(page.locator('link[hreflang="es"]')).toHaveAttribute('href', /\/$/);
+    await expect(page.locator('link[hreflang="en"]')).toHaveAttribute('href', /\/en\/$/);
+    await expect(page.locator('meta[property="og:image"]')).toHaveAttribute('content', /\/og-en\.png$/);
+    await expect(page.locator('meta[property="og:locale"]')).toHaveAttribute('content', 'en_US');
+    const png = await (await request.get('/og-en.png')).body();
+    expect([png.readUInt32BE(16), png.readUInt32BE(20)]).toEqual([1200, 630]);
+  });
+
+  test('el globo de Contacto escribe en inglés', async ({ page }) => {
+    await page.goto('/en/');
+    await page.getByTestId('mascota-contacto').scrollIntoViewIfNeeded();
+    await expect(page.getByTestId('globo-contacto').locator('.globo-texto')).toHaveText("Let's talk!", { timeout: 8_000 });
+  });
+
+  test('el bicho atrapado en inglés lleva a "You caught a bug!"', async ({ page }) => {
+    await page.goto('/en/?bicho');
+    const bicho = page.getByTestId('bicho');
+    await expect(bicho).toBeVisible({ timeout: 5_000 });
+    await bicho.dispatchEvent('click');
+    await expect(page).toHaveURL(/\/en\/bug-found\/$/);
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('You caught a bug!');
+    await expect(page.getByTestId('ticket-bug')).toContainText('Steps to reproduce');
+  });
+
+  test('accesibilidad en inglés (axe)', async ({ page }) => {
+    for (const ruta of ['/en/', `/en/projects/${proyectosEn[0].slug}/`]) {
+      await page.goto(ruta);
+      const { violations } = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();
+      const graves = violations.filter((v) => v.impact === 'serious' || v.impact === 'critical');
+      expect(graves.map((v) => `${v.id}: ${v.help}`), `en ${ruta}`).toEqual([]);
+    }
   });
 });

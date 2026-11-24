@@ -3,11 +3,12 @@
 // Proporción oficial 3:2 — amarillo la mitad, azul y rojo un cuarto cada uno.
 interface Props {
   alto?: number;
+  etiqueta?: string;
 }
-const { alto = 14 } = Astro.props;
+const { alto = 14, etiqueta = 'Bandera de Colombia' } = Astro.props;
 ---
 
-<svg class="bandera" viewBox="0 0 30 20" height={alto} width={(alto * 3) / 2} role="img" aria-label="Bandera de Colombia">
+<svg class="bandera" viewBox="0 0 30 20" height={alto} width={(alto * 3) / 2} role="img" aria-label={etiqueta}>
   <rect width="30" height="10" fill="#FCD116" />
   <rect y="10" width="30" height="5" fill="#003893" />
   <rect y="15" width="30" height="5" fill="#CE1126" />

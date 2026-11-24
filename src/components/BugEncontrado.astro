@@ -1,0 +1,173 @@
+---
+// Easter egg: a esta página se llega al atrapar el bicho que camina por el sitio.
+// La usan src/pages/bug-encontrado.astro (español) y src/pages/en/bug-found.astro (inglés).
+import Base from '../layouts/Base.astro';
+import EscenaCaida from './EscenaCaida.astro';
+import { rutas, type Idioma } from '../i18n';
+
+interface Props {
+  idioma: Idioma;
+}
+const { idioma } = Astro.props;
+const otro: Idioma = idioma === 'es' ? 'en' : 'es';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const inicio = `${base}${rutas.inicio[idioma]}`;
+const hoy = new Date().toLocaleDateString(idioma === 'en' ? 'en-US' : 'es-CO', {
+  day: 'numeric',
+  month: 'short',
+  year: 'numeric',
+});
+
+const t = {
+  es: {
+    titulo: '¡Cazaste un bug!',
+    descripcion: 'Easter egg: atrapaste el bug que anda suelto por el portfolio.',
+    bajada: 'Buen ojo de QA. Ya quedó reportado:',
+    ticketAria: 'Ticket del bug',
+    estado: '✓ Cazado',
+    resumen: 'Un bicho caminaba por el portfolio',
+    reportadoPor: 'Reportado por',
+    tu: 'Tú 🔍',
+    prioridad: 'Prioridad',
+    alta: 'Alta (se movía mucho)',
+    fecha: 'Fecha',
+    pasos: 'Pasos para reproducir',
+    paso1: 'Entrar al portfolio.',
+    paso2: 'Esperar a que aparezca un bicho.',
+    paso3: 'Atraparlo (él no se deja).',
+    esperado: 'Resultado esperado:',
+    esperadoTexto: 'que alguien lo encuentre antes que los usuarios. ✅',
+    volver: 'Volver al inicio',
+    contratar: 'Contratar a este QA',
+  },
+  en: {
+    titulo: 'You caught a bug!',
+    descripcion: 'Easter egg: you caught the bug crawling around the portfolio.',
+    bajada: 'Sharp QA eye. It’s been reported:',
+    ticketAria: 'Bug ticket',
+    estado: '✓ Caught',
+    resumen: 'A bug was crawling around the portfolio',
+    reportadoPor: 'Reported by',
+    tu: 'You 🔍',
+    prioridad: 'Priority',
+    alta: 'High (it kept moving)',
+    fecha: 'Date',
+    pasos: 'Steps to reproduce',
+    paso1: 'Open the portfolio.',
+    paso2: 'Wait for a bug to show up.',
+    paso3: 'Catch it (it won’t make it easy).',
+    esperado: 'Expected result:',
+    esperadoTexto: 'someone finds it before the users do. ✅',
+    volver: 'Back to home',
+    contratar: 'Hire this QA',
+  },
+}[idioma];
+---
+
+<Base idioma={idioma} alterna={rutas.bugEncontrado[otro]} titulo={t.titulo} descripcion={t.descripcion} sinBicho noIndexar>
+  <EscenaCaida idioma={idioma}>
+    <p class="eyebrow">Easter egg</p>
+    <h1 class="degradado">{t.titulo}</h1>
+    <p class="muted bajada">{t.bajada}</p>
+
+    <article class="ticket vidrio" aria-label={t.ticketAria} data-testid="ticket-bug">
+      <header>
+        <span class="clave">BUG-404</span>
+        <span class="estado">{t.estado}</span>
+      </header>
+      <h2>{t.resumen}</h2>
+      <dl>
+        <div><dt>{t.reportadoPor}</dt><dd>{t.tu}</dd></div>
+        <div><dt>{t.prioridad}</dt><dd>{t.alta}</dd></div>
+        <div><dt>{t.fecha}</dt><dd>{hoy}</dd></div>
+      </dl>
+      <p class="pasos-titulo">{t.pasos}</p>
+      <ol>
+        <li>{t.paso1}</li>
+        <li>{t.paso2}</li>
+        <li>{t.paso3}</li>
+      </ol>
+      <p class="resultado"><strong>{t.esperado}</strong> {t.esperadoTexto}</p>
+    </article>
+
+    <div class="acciones">
+      <a class="boton primario" href={inicio}>{t.volver}</a>
+      <a class="boton" href={`${inicio}#contacto`}>{t.contratar}</a>
+    </div>
+  </EscenaCaida>
+</Base>
+
+<style>
+  .ticket {
+    max-width: 460px;
+    padding: 18px 20px;
+    margin: 0 0 1.75rem;
+    text-align: left;
+    font-size: 0.92rem;
+    border-left: 3px solid var(--violeta-400);
+  }
+  .ticket header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+  .clave {
+    font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+    color: var(--violeta-300);
+    font-weight: 700;
+  }
+  .estado {
+    padding: 2px 10px;
+    border-radius: 999px;
+    background: rgba(126, 226, 184, 0.14);
+    color: #7ee2b8;
+    font-weight: 700;
+    font-size: 0.8rem;
+  }
+  .ticket h2 {
+    font-size: 1.05rem;
+    margin: 0 0 10px;
+  }
+  dl {
+    display: grid;
+    gap: 4px;
+    margin: 0 0 10px;
+  }
+  dl div {
+    display: flex;
+    gap: 8px;
+  }
+  dt {
+    color: var(--muted);
+    min-width: 110px;
+  }
+  dd {
+    margin: 0;
+  }
+  .pasos-titulo {
+    margin: 0;
+    color: var(--muted);
+  }
+  ol {
+    margin: 4px 0 10px;
+    padding-left: 1.2rem;
+  }
+  .resultado {
+    margin: 0;
+  }
+  .acciones {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  @media (max-width: 760px) {
+    .ticket {
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .acciones {
+      justify-content: center;
+    }
+  }
+</style>

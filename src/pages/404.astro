@@ -1,4 +1,6 @@
 ---
+// Página para direcciones que no existen. Los hostings gratis (Netlify, Vercel) muestran este
+// mismo archivo para cualquier idioma, así que lleva el texto principal en español y una línea en inglés.
 import Base from '../layouts/Base.astro';
 import EscenaCaida from '../components/EscenaCaida.astro';
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
@@ -9,6 +11,27 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     <p class="eyebrow">Error 404</p>
     <h1 class="degradado">Esta página no existe</h1>
     <p class="muted bajada">Un bug encontrado. Esta vez no es tuyo.</p>
-    <a class="boton primario" href={`${base}/`}>Volver al inicio</a>
+    <p class="muted en" lang="en">Page not found. A bug, but not yours this time.</p>
+    <div class="acciones">
+      <a class="boton primario" href={`${base}/`}>Volver al inicio</a>
+      <a class="boton" href={`${base}/en/`} lang="en">Back to home (English)</a>
+    </div>
   </EscenaCaida>
 </Base>
+
+<style>
+  .en {
+    margin: -1rem 0 1.75rem;
+    font-size: 0.95rem;
+  }
+  .acciones {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  @media (max-width: 760px) {
+    .acciones {
+      justify-content: center;
+    }
+  }
+</style>

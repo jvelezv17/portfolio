@@ -1,4 +1,6 @@
-// Genera public/og.png: la imagen que aparece al compartir el link en LinkedIn, WhatsApp, X…
+// Genera las imágenes que aparecen al compartir el link en LinkedIn, WhatsApp, X…
+//   public/og.png     → versión en español
+//   public/og-en.png  → versión en inglés
 // Tamaño estándar 1200×630. Se arma en HTML (mismas fuentes y colores del sitio) y se le toma
 // una captura con Playwright.
 //
@@ -6,15 +8,22 @@
 import { chromium } from '@playwright/test';
 import { readFileSync } from 'node:fs';
 
-// Datos del perfil (leídos del mismo archivo que usa el sitio, sin compilar TypeScript)
-const fuente = readFileSync('src/data/perfil.ts', 'utf8');
-const dato = (clave) => fuente.match(new RegExp(`${clave}:\\s*'([^']+)'`))?.[1] ?? '';
-const nombre = dato('nombre');
-const rol = dato('rol');
-const frase = dato('frase');
+// Datos del perfil (leídos de los mismos archivos que usa el sitio, sin compilar TypeScript)
+const leer = (archivo) => {
+  const fuente = readFileSync(archivo, 'utf8');
+  return (clave) => fuente.match(new RegExp(`${clave}:\\s*'([^']+)'`))?.[1] ?? '';
+};
+const es = leer('src/data/perfil.ts');
+const en = leer('src/data/en/perfil.ts');
+const nombre = es('nombre'); // el nombre solo está en el archivo en español
 const avatar = readFileSync('public/avatar/perfil-quieto.webp').toString('base64');
 
-const html = /* html */ `<!doctype html>
+const versiones = [
+  { archivo: 'public/og.png', rol: es('rol'), frase: es('frase'), remoto: 'COL · Remoto', ok: 'todas las pruebas pasan' },
+  { archivo: 'public/og-en.png', rol: en('rol'), frase: en('frase'), remoto: 'COL · Remote', ok: 'all tests passed' },
+];
+
+const plantilla = ({ rol, frase, remoto, ok }) => /* html */ `<!doctype html>
 <html><head><meta charset="utf-8">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@600;700&display=block" rel="stylesheet">
 <style>
@@ -69,14 +78,14 @@ const html = /* html */ `<!doctype html>
     <div class="texto">
       <div class="fila">
         <span class="eyebrow">${rol}</span>
-        <span class="pais"><span class="bandera"><i style="background:#FCD116"></i><i style="background:#003893"></i><i style="background:#CE1126"></i></span>COL · Remoto</span>
+        <span class="pais"><span class="bandera"><i style="background:#FCD116"></i><i style="background:#003893"></i><i style="background:#CE1126"></i></span>${remoto}</span>
       </div>
       <h1>${nombre}</h1>
       <p class="frase">${frase}</p>
     </div>
     <div class="avatar">
       <div class="anillo"><img src="data:image/webp;base64,${avatar}"></div>
-      <div class="terminal"><div><span class="p">$</span> npx playwright test</div><div class="ok">✓ todas las pruebas pasan</div></div>
+      <div class="terminal"><div><span class="p">$</span> npx playwright test</div><div class="ok">✓ ${ok}</div></div>
     </div>
   </div>
   <div class="pie"><span class="chip">Playwright</span><span class="chip">TypeScript</span><span class="chip">Cypress</span><span class="chip">Selenium</span></div>
@@ -84,8 +93,10 @@ const html = /* html */ `<!doctype html>
 
 const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 1200, height: 630 } });
-await page.setContent(html, { waitUntil: 'networkidle' });
-await page.evaluate(() => document.fonts.ready);
-await page.screenshot({ path: 'public/og.png' });
+for (const v of versiones) {
+  await page.setContent(plantilla(v), { waitUntil: 'networkidle' });
+  await page.evaluate(() => document.fonts.ready);
+  await page.screenshot({ path: v.archivo });
+  console.log(`Listo: ${v.archivo} (1200×630)`);
+}
 await browser.close();
-console.log('Listo: public/og.png (1200×630)');

@@ -2,6 +2,13 @@
 // Easter egg: un bicho (bug) cruza la pantalla de vez en cuando.
 // Huye si el mouse se le acerca; si lo atrapas, te lleva a /bug-encontrado/.
 // Para verlo enseguida (o en las pruebas): agrega ?bicho a la URL.
+import { textos, rutas, type Idioma } from '../i18n';
+
+interface Props {
+  idioma?: Idioma;
+}
+const { idioma = 'es' } = Astro.props;
+const t = textos[idioma];
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 ---
 
@@ -9,8 +16,8 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   type="button"
   class="bicho"
   hidden
-  aria-label="Un bug anda suelto: atrápalo"
-  data-destino={`${base}/bug-encontrado/`}
+  aria-label={t.bicho}
+  data-destino={`${base}${rutas.bugEncontrado[idioma]}`}
   data-testid="bicho"
 >
   <span class="giro">
@@ -62,7 +69,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     </defs>
   </svg>
   </span>
-  <span class="atrapado" aria-hidden="true">¡Atrapado!</span>
+  <span class="atrapado" aria-hidden="true">{t.atrapado}</span>
 </button>
 
 <style>

@@ -3,6 +3,14 @@
 // El texto de al lado va en el slot.
 import Cintas from './Cintas.astro';
 import { perfil } from '../data/perfil';
+import type { Idioma } from '../i18n';
+
+interface Props {
+  idioma?: Idioma;
+}
+const { idioma = 'es' } = Astro.props;
+const alt =
+  idioma === 'en' ? `Avatar of ${perfil.nombre} falling over in surprise` : `Avatar de ${perfil.nombre} cayéndose sorprendido`;
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 ---
 
@@ -15,7 +23,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
         <source media="(prefers-reduced-motion: reduce)" srcset={`${base}/avatar/404-quieto.webp`} />
         <img
           src={`${base}/avatar/404.webp`}
-          alt={`Avatar de ${perfil.nombre} cayéndose sorprendido`}
+          alt={alt}
           width="370"
           height="454"
           decoding="async"
