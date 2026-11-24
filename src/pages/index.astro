@@ -1,0 +1,309 @@
+---
+import Base from '../layouts/Base.astro';
+import { perfil, formacion, idiomas, proyectosPersonales } from '../data/perfil';
+import { proyectos } from '../data/proyectos';
+import { experiencia } from '../data/experiencia';
+import { stack } from '../data/stack';
+
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+---
+
+<Base>
+  <section class="hero contenedor" aria-labelledby="hero-titulo">
+    <p class="eyebrow">{perfil.rol}</p>
+    <h1 id="hero-titulo">{perfil.nombre}</h1>
+    <p class="frase">{perfil.frase}</p>
+    <p class="muted resumen">{perfil.resumen}</p>
+    <div class="acciones">
+      <a class="boton primario" href="#proyectos">Ver casos de estudio</a>
+      <a class="boton" href="#contacto">Contactarme</a>
+      {perfil.cv && <a class="boton" href={perfil.cv} download>Descargar CV</a>}
+    </div>
+  </section>
+
+  <section id="proyectos" class="seccion" aria-labelledby="proyectos-titulo">
+    <div class="contenedor">
+      <p class="eyebrow">Casos de estudio</p>
+      <h2 id="proyectos-titulo">Problemas reales, cómo los resolví y qué cambió</h2>
+      <p class="muted nota">
+        Trabajo en una plataforma SaaS de HR-tech. Por confidencialidad, los casos se cuentan sin nombres de la
+        empresa ni de sus clientes, y sin código ni datos reales.
+      </p>
+      <ul class="tarjetas">
+        {
+          proyectos.map((p) => (
+            <li class="tarjeta" data-testid="tarjeta-proyecto">
+              <h3>
+                <a href={`${base}/proyectos/${p.slug}/`}>{p.titulo}</a>
+              </h3>
+              <p class="muted">{p.resumen}</p>
+              <ul class="chips">
+                {p.etiquetas.map((e) => (
+                  <li class="chip">{e}</li>
+                ))}
+              </ul>
+            </li>
+          ))
+        }
+      </ul>
+
+      <h3 class="subtitulo">Proyectos propios</h3>
+      <ul class="tarjetas">
+        {
+          proyectosPersonales.map((p) => (
+            <li class="tarjeta">
+              <h4>
+                <a href={p.url} target="_blank" rel="noopener noreferrer">
+                  {p.nombre} <span aria-hidden="true">↗</span>
+                </a>
+              </h4>
+              <p class="muted">{p.descripcion}</p>
+              <ul class="chips">
+                {p.tecnologias.map((t) => (
+                  <li class="chip">{t}</li>
+                ))}
+              </ul>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <section id="experiencia" class="seccion" aria-labelledby="experiencia-titulo">
+    <div class="contenedor">
+      <p class="eyebrow">Trayectoria</p>
+      <h2 id="experiencia-titulo">Experiencia</h2>
+      <ol class="linea">
+        {
+          experiencia.map((t) => (
+            <li class="hito" data-testid="trabajo">
+              <p class="fechas">
+                {t.desde} – {t.hasta}
+              </p>
+              <h3>{t.rol}</h3>
+              <p class="empresa">{t.empresa}</p>
+              <ul>
+                {t.logros.map((l) => (
+                  <li>{l}</li>
+                ))}
+              </ul>
+            </li>
+          ))
+        }
+      </ol>
+
+      <div class="dos-columnas">
+        <div>
+          <h3 class="subtitulo">Formación</h3>
+          <ul class="lista-simple">
+            {
+              formacion.map((f) => (
+                <li>
+                  <strong>{f.titulo}</strong>
+                  <br />
+                  <span class="muted">
+                    {f.lugar} · {f.fechas}
+                  </span>
+                </li>
+              ))
+            }
+          </ul>
+        </div>
+        <div>
+          <h3 class="subtitulo">Idiomas</h3>
+          <ul class="lista-simple">
+            {idiomas.map((i) => <li>{i}</li>)}
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="stack" class="seccion" aria-labelledby="stack-titulo">
+    <div class="contenedor">
+      <p class="eyebrow">Herramientas</p>
+      <h2 id="stack-titulo">Stack</h2>
+      <div class="stack">
+        {
+          stack.map((g) => (
+            <div class="grupo">
+              <h3>{g.grupo}</h3>
+              <ul class="chips">
+                {g.items.map((i) => (
+                  <li class="chip">{i}</li>
+                ))}
+              </ul>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <section id="contacto" class="seccion" aria-labelledby="contacto-titulo">
+    <div class="contenedor">
+      <p class="eyebrow">Hablemos</p>
+      <h2 id="contacto-titulo">Contacto</h2>
+      <p class="muted">¿Buscas a alguien que automatice tus pruebas o que arme un área de QA? Escríbeme.</p>
+      <div class="acciones">
+        {perfil.email && <a class="boton primario" href={`mailto:${perfil.email}`}>{perfil.email}</a>}
+        {
+          perfil.linkedin && (
+            <a class="boton" href={perfil.linkedin} target="_blank" rel="noopener noreferrer">
+              LinkedIn
+            </a>
+          )
+        }
+        {
+          perfil.github && (
+            <a class="boton" href={perfil.github} target="_blank" rel="noopener noreferrer">
+              GitHub
+            </a>
+          )
+        }
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .hero {
+    padding: 96px 20px 80px;
+  }
+  .hero h1 {
+    font-size: clamp(2.4rem, 7vw, 4rem);
+    margin: 0 0 1rem;
+  }
+  .frase {
+    font-size: clamp(1.2rem, 2.6vw, 1.5rem);
+    max-width: 34ch;
+    margin: 0 0 1rem;
+    font-weight: 500;
+  }
+  .resumen {
+    max-width: 62ch;
+  }
+  .acciones {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 1.5rem;
+  }
+  .nota {
+    max-width: 70ch;
+    margin-top: -0.5rem;
+  }
+  .tarjetas {
+    list-style: none;
+    padding: 0;
+    margin: 2rem 0 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr));
+    gap: 18px;
+  }
+  .tarjeta {
+    position: relative;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: border-color 0.15s, transform 0.15s;
+  }
+  .tarjeta:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+  }
+  .tarjeta h3,
+  .tarjeta h4 {
+    margin: 0;
+    font-size: 1.1rem;
+  }
+  .tarjeta h3 a,
+  .tarjeta h4 a {
+    color: var(--text);
+    text-decoration: none;
+  }
+  /* toda la tarjeta es clicable */
+  .tarjeta h3 a::after,
+  .tarjeta h4 a::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+  }
+  .tarjeta p {
+    margin: 0;
+    flex: 1;
+  }
+  .subtitulo {
+    margin: 3rem 0 0;
+    font-size: 1.2rem;
+  }
+  .linea {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    border-left: 2px solid var(--border);
+  }
+  .hito {
+    position: relative;
+    padding: 0 0 2rem 28px;
+  }
+  .hito::before {
+    content: '';
+    position: absolute;
+    left: -8px;
+    top: 6px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--bg);
+    border: 3px solid var(--accent);
+  }
+  .hito h3 {
+    margin: 0;
+    font-size: 1.15rem;
+  }
+  .fechas {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--muted);
+    font-weight: 600;
+  }
+  .empresa {
+    margin: 0 0 0.5rem;
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .hito ul {
+    margin: 0;
+    padding-left: 1.1rem;
+  }
+  .dos-columnas {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+    gap: 24px;
+  }
+  .dos-columnas .subtitulo {
+    margin-top: 1.5rem;
+  }
+  .lista-simple {
+    list-style: none;
+    padding: 0;
+    margin: 1rem 0 0;
+    display: grid;
+    gap: 12px;
+  }
+  .stack {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+    gap: 24px;
+  }
+  .grupo h3 {
+    font-size: 1rem;
+    margin: 0 0 0.6rem;
+  }
+</style>
