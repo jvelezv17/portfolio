@@ -198,8 +198,18 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
   <section id="contacto" class="seccion" aria-labelledby="contacto-titulo">
     <div class="contenedor">
       <div class="panel-contacto vidrio revelar">
-        <div class="mascota">
-          <p class="globo" aria-hidden="true">¡Hablemos!</p>
+        <!--
+          Tiempos de la animación (en ms), medidos cuadro por cuadro en public/avatar/contacto.webp:
+          bucle completo 2666, la voltereta va de 266 a 1100. Si cambias el WebP, actualízalos.
+        -->
+        <div class="mascota" data-mascota data-bucle="2666" data-vuelta-desde="266" data-vuelta-hasta="1100">
+          <div class="globo" aria-hidden="true" data-testid="globo-contacto">
+            <span class="remolino">🌪️</span>
+            <span class="torbellino"><i></i><i></i><i></i><i></i><i></i><i></i></span>
+            <p class="globo-cuerpo">
+              <span class="globo-texto" data-frase="¡Hablemos!">¡Hablemos!</span><span class="cursor"></span>
+            </p>
+          </div>
           <picture>
             <source media="(prefers-reduced-motion: reduce)" srcset={`${base}/avatar/contacto-quieto.webp`} />
             <img
@@ -241,6 +251,132 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     </div>
   </section>
 </Base>
+
+<script>
+  // Globo de chat del avatar de Contacto:
+  // 1. primera voltereta al entrar a Contacto: aparece un torbellino 🌪️ donde va el globo;
+  // 2. al terminar la voltereta, el torbellino se recoge, sale el globo girando y
+  //    "¡Hablemos!" se escribe letra por letra, como en un chat;
+  // 3. en las siguientes volteretas, el globo solo da una vuelta.
+  // Para que todo coincida con la voltereta, la animación del WebP se reinicia desde el
+  // cuadro 0 cada vez que Contacto aparece, y desde ahí se cuenta el tiempo.
+  const esperar = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+  const mascota = document.querySelector<HTMLElement>('[data-mascota]');
+  const img = mascota?.querySelector('img');
+  const globo = mascota?.querySelector<HTMLElement>('.globo');
+  const cuerpo = globo?.querySelector<HTMLElement>('.globo-cuerpo');
+  const texto = globo?.querySelector<HTMLElement>('.globo-texto');
+  const sinMovimiento = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  if (mascota && img && globo && cuerpo && texto && !sinMovimiento) {
+    const frase = texto.dataset.frase ?? texto.textContent ?? '';
+    const bucle = Number(mascota.dataset.bucle);
+    const desde = Number(mascota.dataset.vueltaDesde);
+    const hasta = Number(mascota.dataset.vueltaHasta);
+    globo.style.setProperty('--duracion-vuelta', `${hasta - desde}ms`);
+
+    texto.textContent = '';
+    globo.classList.add('oculto');
+
+    let estado: 'nuevo' | 'intro' | 'listo' = 'nuevo';
+    let t0 = 0;
+    let relojListo = false; // true cuando t0 ya corresponde al cuadro 0 del avatar
+    let ultimoCiclo = -1;
+    let raf = 0;
+    let archivo: Blob | undefined;
+    const origen = img.src;
+
+    // torbellino durante la voltereta → globo → texto letra por letra
+    async function intro() {
+      estado = 'intro';
+      globo!.classList.add('torbellino-activo');
+      await esperar(hasta - desde);
+      globo!.classList.remove('torbellino-activo', 'oculto');
+      globo!.classList.add('aparece');
+      await esperar(160);
+      globo!.classList.add('tecleando');
+      const letras = [...frase];
+      for (let i = 0; i < letras.length; i++) {
+        texto!.textContent += letras[i];
+        if (i === letras.length - 1) break;
+        // ritmo humano: irregular, un poco más lento al empezar y antes del signo final.
+        // Tiene que terminar antes de la siguiente voltereta (~1,6 s después de salir el globo).
+        let pausa = 55 + Math.random() * 65;
+        if (i === 0) pausa += 110;
+        if (i === letras.length - 2) pausa += 90;
+        await esperar(pausa);
+      }
+      estado = 'listo';
+      await esperar(500);
+      globo!.classList.remove('tecleando', 'aparece');
+    }
+
+    // Reinicia el WebP en el cuadro 0 usando una URL nueva (blob) del mismo archivo.
+    async function reiniciarAvatar() {
+      relojListo = false;
+      try {
+        archivo ??= await fetch(origen).then((r) => r.blob());
+        const url = URL.createObjectURL(archivo);
+        const nueva = new Image();
+        nueva.src = url;
+        await nueva.decode();
+        const anterior = img!.src;
+        img!.src = url;
+        requestAnimationFrame(() => {
+          t0 = performance.now();
+          ultimoCiclo = -1;
+          relojListo = true;
+        });
+        if (anterior.startsWith('blob:')) URL.revokeObjectURL(anterior);
+      } catch {
+        t0 = performance.now(); // si algo falla, el avatar sigue animado igual
+        relojListo = true;
+      }
+    }
+
+    cuerpo.addEventListener('animationend', () => {
+      cuerpo.classList.remove('gira');
+      globo.classList.remove('girando');
+    });
+
+    function girar() {
+      cuerpo!.classList.remove('gira');
+      globo!.classList.remove('girando');
+      void cuerpo!.offsetWidth; // reinicia la animación CSS
+      cuerpo!.classList.add('gira');
+      globo!.classList.add('girando');
+    }
+
+    function vigilar() {
+      const transcurrido = performance.now() - t0;
+      const ciclo = Math.floor(transcurrido / bucle);
+      const fase = transcurrido % bucle;
+      // actúa solo justo cuando empieza una voltereta (no a mitad de ella)
+      if (relojListo && ciclo !== ultimoCiclo && fase >= desde && fase < desde + 120) {
+        ultimoCiclo = ciclo;
+        if (estado === 'nuevo') intro();
+        else if (estado === 'listo') girar();
+      }
+      raf = requestAnimationFrame(vigilar);
+    }
+
+    new IntersectionObserver(
+      (entradas) => {
+        for (const e of entradas) {
+          if (e.isIntersecting) {
+            reiniciarAvatar();
+            cancelAnimationFrame(raf);
+            raf = requestAnimationFrame(vigilar);
+          } else {
+            cancelAnimationFrame(raf);
+          }
+        }
+      },
+      { threshold: 0.4 },
+    ).observe(mascota);
+  }
+</script>
 
 <style>
   /* ---------- Hero ---------- */
@@ -628,24 +764,36 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       transform: scaleX(0.9);
     }
   }
+  /* ---------- Globo de chat ---------- */
+  /* .globo flota; .globo-cuerpo es lo que gira (así las dos animaciones no se pisan).
+     Va anclado por la derecha: al escribir crece hacia la izquierda y la colita
+     sigue apuntando a la mano levantada. */
   .globo {
     position: absolute;
     z-index: 2;
     top: 34%;
-    left: -14%;
+    right: 72%;
+    animation: flotar-y 3s ease-in-out infinite alternate;
+  }
+  .globo-cuerpo {
+    position: relative;
     margin: 0;
-    padding: 6px 14px;
-    border-radius: 14px;
+    padding: 7px 14px;
+    min-height: 2.1em;
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    border-radius: 16px;
     background: linear-gradient(100deg, var(--violeta-300), var(--lila-300));
     color: #0b0620;
     font-family: 'Space Grotesk', system-ui, sans-serif;
     font-weight: 700;
     font-size: 0.95rem;
     box-shadow: 0 6px 24px rgba(140, 100, 255, 0.45);
-    animation: flotar-y 3s ease-in-out infinite alternate;
+    transform-origin: 50% 50%;
   }
-  /* colita del globo, apuntando hacia la mano levantada */
-  .globo::after {
+  /* colita, apuntando hacia la mano levantada */
+  .globo-cuerpo::after {
     content: '';
     position: absolute;
     right: 10px;
@@ -654,6 +802,162 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     height: 12px;
     background: var(--lila-300);
     clip-path: polygon(0 0, 100% 0, 100% 100%);
+  }
+
+  /* Estado inicial con JS: globo escondido hasta que Contacto entra en pantalla */
+  .globo.oculto .globo-cuerpo {
+    visibility: hidden;
+    opacity: 0;
+  }
+  /* el globo "sale" del torbellino: gira y se infla con un rebote */
+  .globo.aparece .globo-cuerpo {
+    animation: salir-del-torbellino 0.55s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  @keyframes salir-del-torbellino {
+    from {
+      transform: rotate(-300deg) scale(0.15);
+      opacity: 0;
+      filter: blur(3px);
+    }
+    60% {
+      opacity: 1;
+      filter: blur(0);
+    }
+  }
+
+  /* Torbellino: anillos apilados que se mecen desfasados, más anchos arriba (embudo).
+     Solo se ve durante la primera voltereta; luego se recoge y deja el globo. */
+  .torbellino {
+    position: absolute;
+    right: 6px;
+    bottom: 0;
+    width: 124px;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    pointer-events: none;
+    filter: drop-shadow(0 0 8px rgba(185, 150, 255, 0.9));
+    transform-origin: 50% 100%;
+  }
+  .globo.torbellino-activo .torbellino {
+    display: flex;
+    animation: torbellino-vida var(--duracion-vuelta, 834ms) ease-in-out forwards;
+  }
+  .torbellino i {
+    display: block;
+    height: 14px;
+    border-radius: 50%;
+    border: 3.5px solid var(--lila-300);
+    border-top-color: rgba(255, 255, 255, 0.9);
+    border-bottom-color: var(--violeta-500);
+    animation: mecer-anillo 0.32s ease-in-out infinite alternate;
+  }
+  .torbellino i:nth-child(1) { width: 124px; animation-delay: 0s; }
+  .torbellino i:nth-child(2) { width: 100px; animation-delay: -0.08s; }
+  .torbellino i:nth-child(3) { width: 78px; animation-delay: -0.16s; }
+  .torbellino i:nth-child(4) { width: 58px; animation-delay: -0.24s; }
+  .torbellino i:nth-child(5) { width: 40px; animation-delay: -0.32s; }
+  .torbellino i:nth-child(6) { width: 22px; animation-delay: -0.4s; }
+  @keyframes mecer-anillo {
+    from {
+      transform: translateX(-7px) rotate(-4deg);
+    }
+    to {
+      transform: translateX(7px) rotate(4deg);
+    }
+  }
+  @keyframes torbellino-vida {
+    0% {
+      opacity: 0;
+      transform: scale(0.2, 0.1) rotate(-20deg);
+    }
+    20% {
+      opacity: 1;
+      transform: scale(1, 1) rotate(6deg);
+    }
+    70% {
+      opacity: 1;
+      transform: scale(1.05, 1) rotate(-6deg);
+    }
+    100% {
+      /* se recoge hacia donde aparece el globo */
+      opacity: 0;
+      transform: scale(0.3, 0.15) translateY(-20px) rotate(10deg);
+    }
+  }
+
+  /* cursor que parpadea mientras escribe y se apaga al terminar */
+  .cursor {
+    display: inline-block;
+    width: 2px;
+    height: 1em;
+    margin-left: 2px;
+    background: #0b0620;
+    opacity: 0;
+    transition: opacity 0.4s;
+  }
+  .globo.tecleando .cursor {
+    opacity: 1;
+    animation: parpadeo 0.9s steps(1) infinite;
+  }
+  @keyframes parpadeo {
+    50% {
+      opacity: 0;
+    }
+  }
+
+  /* Remolino: el globo da una vuelta mientras el avatar hace la voltereta */
+  .globo:not(.oculto) .globo-cuerpo.gira {
+    animation: remolino-globo var(--duracion-vuelta, 834ms) cubic-bezier(0.45, 0, 0.3, 1);
+  }
+  @keyframes remolino-globo {
+    0% {
+      transform: rotate(0) scale(1);
+    }
+    15% {
+      transform: translate(-6px, 0) rotate(-18deg) scale(0.9);
+    }
+    55% {
+      /* se corre a la izquierda: en la voltereta la cabeza del avatar invade este espacio */
+      transform: translate(-34px, -8px) rotate(250deg) scale(0.72);
+      filter: blur(0.6px);
+    }
+    85% {
+      transform: translate(-8px, 0) rotate(372deg) scale(0.97);
+    }
+    100% {
+      transform: rotate(360deg) scale(1);
+    }
+  }
+  .remolino {
+    position: absolute;
+    left: -14px;
+    top: -18px;
+    font-size: 1.5rem;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .globo.girando .remolino {
+    animation: remolino-emoji var(--duracion-vuelta, 834ms) ease-out;
+  }
+  @keyframes remolino-emoji {
+    0% {
+      opacity: 0;
+      transform: translate(10px, 10px) scale(0.3) rotate(0);
+    }
+    30% {
+      opacity: 1;
+      transform: translate(0, 0) scale(1.1) rotate(-120deg);
+    }
+    75% {
+      opacity: 1;
+      transform: translate(-6px, -10px) scale(1) rotate(-300deg);
+    }
+    100% {
+      opacity: 0;
+      transform: translate(-12px, -22px) scale(0.6) rotate(-400deg);
+    }
   }
 
   /* ---------- Responsive ---------- */

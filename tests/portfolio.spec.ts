@@ -76,7 +76,6 @@ test.describe('Avatar animado', () => {
     await expect
       .poll(() => mascota.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0))
       .toBe(true);
-    expect(await mascota.evaluate((img: HTMLImageElement) => img.currentSrc)).toContain('/avatar/contacto.webp');
 
     // WebP animado: el archivo trae el bloque ANIM y no se pasa de 1,5 MB
     const res = await request.get('/avatar/contacto.webp');
@@ -93,6 +92,29 @@ test.describe('Avatar animado', () => {
     await expect
       .poll(() => mascota.evaluate((img: HTMLImageElement) => img.currentSrc))
       .toContain('/avatar/contacto-quieto.webp');
+    // sin animaciones: el globo ya trae el texto completo, sin torbellino ni tecleo
+    await expect(page.getByTestId('globo-contacto').locator('.globo-texto')).toHaveText('¡Hablemos!');
+    await expect(page.getByTestId('globo-contacto')).not.toHaveClass(/oculto/);
+  });
+
+  test('el globo sale del torbellino y escribe "¡Hablemos!" letra por letra', async ({ page }) => {
+    await page.goto('/');
+    const globo = page.getByTestId('globo-contacto');
+    const texto = globo.locator('.globo-texto');
+    // antes de llegar a Contacto, el globo está escondido y vacío
+    await expect(globo).toHaveClass(/oculto/);
+    await expect(texto).toHaveText('');
+
+    await page.getByTestId('mascota-contacto').scrollIntoViewIfNeeded();
+    // primero el torbellino (durante la primera voltereta)…
+    await expect(globo).toHaveClass(/torbellino-activo/, { timeout: 5_000 });
+    // …luego el texto va apareciendo por partes, hasta quedar completo
+    await expect(texto).toHaveText(/^¡Hab?/, { timeout: 5_000 });
+    await expect(texto).toHaveText('¡Hablemos!', { timeout: 5_000 });
+    await expect(globo).not.toHaveClass(/oculto|torbellino-activo/);
+
+    // y en la siguiente voltereta, el globo gira
+    await expect(page.locator('.globo-cuerpo')).toHaveClass(/gira/, { timeout: 5_000 });
   });
 });
 
