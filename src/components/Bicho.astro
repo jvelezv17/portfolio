@@ -284,6 +284,16 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
       setTimeout(() => (location.href = bicho!.dataset.destino!), 750);
     });
 
+    // Al volver con "atrás", el navegador restaura la página desde su memoria (bfcache) tal
+    // como quedó: con el bicho congelado en "¡Atrapado!". Aquí se esconde y vuelve a salir después.
+    addEventListener('pageshow', (e) => {
+      if (!e.persisted || !bicho!.classList.contains('cazado')) return;
+      bicho!.classList.remove('cazado', 'camina', 'corre');
+      bicho!.hidden = true;
+      activo = false;
+      programar();
+    });
+
     // primera aparición: 12–25 s después de entrar (o enseguida con ?bicho)
     setTimeout(lanzar, ya ? 300 : azar(12000, 25000));
   }

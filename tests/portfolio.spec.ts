@@ -189,6 +189,21 @@ test.describe('Easter egg: el bug que camina', () => {
     expect(arriba, 'en el centro de la foto de perfil, lo que queda arriba debe ser el bicho').toBe(true);
   });
 
+  test('al volver con "atrás" después de atraparlo, el bicho no queda congelado en pantalla', async ({ page }) => {
+    await page.goto('/?bicho');
+    const bicho = page.getByTestId('bicho');
+    await expect(bicho).toBeVisible({ timeout: 5_000 });
+    // se simula el atrapado sin navegar, y luego lo que hace el navegador al restaurar la página
+    // desde su memoria (bfcache) al volver con "atrás": dispara pageshow con persisted = true
+    await page.evaluate(() => {
+      const b = document.querySelector('.bicho')!;
+      b.classList.add('cazado');
+      window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true }));
+    });
+    await expect(bicho).toBeHidden();
+    await expect(bicho).not.toHaveClass(/cazado/);
+  });
+
   test('la página del easter egg no se indexa y no tiene su propio bicho', async ({ page }) => {
     await page.goto('/bug-encontrado/');
     await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', 'noindex');
