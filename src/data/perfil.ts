@@ -12,7 +12,7 @@ export const perfil = {
   email: 'juesveva17@gmail.com',
   linkedin: 'https://www.linkedin.com/in/juan-esteban-v%C3%A9lez-vanegas-74215b304',
   github: 'https://github.com/jvelezv17',
-  cv: '', // opcional: '/cv-juan-velez.pdf' (pon el PDF en la carpeta public/)
+  cv: '', // CV en español, ej. '/cv-juan-velez-es.pdf' (el PDF va en public/). El de inglés va en en/perfil.ts
   // Repo de este mismo sitio (para el enlace "Este sitio está probado con Playwright")
   repoSitio: 'https://github.com/jvelezv17/portfolio', // cámbialo si el repo se llama distinto
 };

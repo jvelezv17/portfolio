@@ -39,14 +39,14 @@ export const proyectos: Proyecto[] = [
     slug: 'reporte-por-causa',
     titulo: 'Un reporte que dice de quién es cada fallo',
     resumen:
-      'Cada error se clasifica como bug de la aplicación, prerequisito de negocio o fallo de la automatización, con evidencia.',
+      'Cada error se clasifica como bug de la aplicación, prerrequisito de negocio o fallo de la automatización, con evidencia.',
     etiquetas: ['Reportes', 'Diagnóstico', 'Comunicación con desarrollo'],
     problema: [
       'Un “test en rojo” no dice nada. El equipo de desarrollo perdía tiempo investigando fallos que en realidad eran datos de prueba mal preparados o un selector roto en la automatización.',
       'Eso desgasta la confianza en las pruebas automatizadas: si la mitad de las alertas son ruido, nadie las mira.',
     ],
     queHice: [
-      'Cada paso de la suite devuelve un resultado estructurado y, cuando falla, se clasifica por causa: bug de la aplicación, prerequisito de negocio no cumplido o fallo de la automatización.',
+      'Cada paso de la suite devuelve un resultado estructurado y, cuando falla, se clasifica por causa: bug de la aplicación, prerrequisito de negocio no cumplido o fallo de la automatización.',
       'Al fallar se captura la evidencia visible en pantalla (mensajes de error, alertas) y una captura, para que el reporte se entienda sin volver a correr nada.',
       'Al final de cada corrida se imprime un resumen de una línea por instancia: pasos OK, omitidos y fallos separados por causa.',
       'Lo que ya se reportó y desarrollo aceptó como comportamiento conocido queda registrado, para no volver a reportarlo.',

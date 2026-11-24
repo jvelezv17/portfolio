@@ -4,7 +4,7 @@ import type { Trabajo } from '../experiencia';
 
 export const experiencia: Trabajo[] = [
   {
-    empresa: 'AI-powered HR-tech SaaS platform',
+    empresa: 'SaaS HR-tech platform with AI',
     rol: 'QA Automation Lead',
     desde: 'Nov 2026',
     hasta: 'Present',
@@ -14,7 +14,7 @@ export const experiencia: Trabajo[] = [
     ],
   },
   {
-    empresa: 'AI-powered HR-tech SaaS platform',
+    empresa: 'SaaS HR-tech platform with AI',
     rol: 'QA Tester · Automation',
     desde: 'Jan 2026',
     hasta: 'Nov 2026',
@@ -27,7 +27,7 @@ export const experiencia: Trabajo[] = [
   },
   {
     empresa: 'ITAC IT Applications Consulting',
-    rol: 'Junior Test Analyst',
+    rol: 'Junior QA Analyst',
     desde: 'Mar 2025',
     hasta: 'Nov 2025',
     logros: [
@@ -39,7 +39,7 @@ export const experiencia: Trabajo[] = [
   },
   {
     empresa: 'RocketEdge Labs',
-    rol: 'Manual QA',
+    rol: 'Manual QA Tester',
     desde: 'Jan 2024',
     hasta: 'Aug 2024',
     logros: [
