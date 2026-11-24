@@ -19,6 +19,14 @@ function vigilarErrores(page: Page) {
   return errores;
 }
 
+// El Chromium de las pruebas dibuja por software, así que el sitio entraría solo en "modo liviano".
+// Las pruebas normales fuerzan el modo completo; el liviano tiene sus propias pruebas al final.
+test.beforeEach(async ({ page }, info) => {
+  if (!info.titlePath.some((t) => t.startsWith('Modo liviano'))) {
+    await page.addInitScript(() => ((window as Window & { __forzarLiviano?: boolean }).__forzarLiviano = false));
+  }
+});
+
 test.describe('Carga', () => {
   test('el inicio carga con nombre, rol y frase de valor', async ({ page }) => {
     const errores = vigilarErrores(page);
@@ -306,5 +314,48 @@ test.describe('Calidad', () => {
       const graves = violations.filter((v) => v.impact === 'serious' || v.impact === 'critical');
       expect(graves.map((v) => `${v.id}: ${v.help}`), `en ${ruta}`).toEqual([]);
     }
+  });
+});
+
+test.describe('Modo liviano (sin aceleración por hardware)', () => {
+  test('se activa solo al detectar dibujo por software', async ({ page }) => {
+    // el Chromium de las pruebas dibuja con SwiftShader (software): debe detectarlo
+    await page.goto('/');
+    const motor = await page.evaluate(() => {
+      const gl = document.createElement('canvas').getContext('webgl');
+      const info = gl?.getExtension('WEBGL_debug_renderer_info');
+      return gl ? String(gl.getParameter(info ? info.UNMASKED_RENDERER_WEBGL : gl.RENDERER)) : 'sin WebGL';
+    });
+    test.skip(!/swiftshader|llvmpipe|software|basic render|sin webgl/i.test(motor), `este navegador tiene GPU (${motor})`);
+    await expect(page.locator('html')).toHaveClass(/liviano/);
+  });
+
+  test('apaga los efectos caros y deja lo importante', async ({ page }) => {
+    await page.goto('/?liviano=1');
+    await expect(page.locator('html')).toHaveClass(/liviano/);
+
+    // sin desenfoque de vidrio ni cintas animadas
+    const vidrio = await page.locator('.vidrio').first().evaluate((el) => getComputedStyle(el).backdropFilter);
+    expect(vidrio).toBe('none');
+    const animCintas = await page.locator('.cintas g').first().evaluate((el) => getComputedStyle(el).animationName);
+    expect(animCintas).toBe('none');
+
+    // la foto de perfil se queda fija…
+    await page.waitForLoadState('load');
+    await page.waitForTimeout(2500);
+    expect(await page.getByTestId('foto-perfil').evaluate((img: HTMLImageElement) => img.currentSrc)).toContain(
+      '/avatar/perfil-quieto.webp',
+    );
+
+    // …pero el avatar de Contacto sigue animado y el globo sigue escribiendo
+    await page.getByTestId('mascota-contacto').scrollIntoViewIfNeeded();
+    await expect(page.getByTestId('globo-contacto').locator('.globo-texto')).toHaveText('¡Hablemos!', {
+      timeout: 8_000,
+    });
+  });
+
+  test('con ?liviano=0 se fuerza el modo completo', async ({ page }) => {
+    await page.goto('/?liviano=0');
+    await expect(page.locator('html')).not.toHaveClass(/liviano/);
   });
 });

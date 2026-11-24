@@ -259,10 +259,11 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
 <script>
   // Foto de perfil animada: se carga DESPUÉS de que la página terminó de cargar, para no
-  // hacer lento el inicio. Se omite con "reducir movimiento" o con ahorro de datos.
+  // hacer lento el inicio. Se omite con "reducir movimiento", ahorro de datos o modo liviano.
   const foto = document.querySelector<HTMLImageElement>('[data-animado]');
   const ahorroDatos = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData;
-  if (foto && !ahorroDatos && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+  const liviano = document.documentElement.classList.contains('liviano'); // sin aceleración: se queda fija
+  if (foto && !ahorroDatos && !liviano && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
     const cambiar = async () => {
       const animada = new Image();
       animada.src = foto.dataset.animado!;
@@ -467,7 +468,21 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     box-shadow:
       0 0 60px rgba(124, 92, 255, 0.55),
       0 0 140px rgba(124, 92, 255, 0.25);
-    animation: girar-brillo 8s linear infinite;
+  }
+  /* Brillo que "respira": es una capa aparte que solo cambia de opacidad. Animar box-shadow
+     directamente obliga a repintar el desenfoque en cada cuadro (muy caro sin GPU). */
+  .anillo::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    box-shadow:
+      0 0 80px rgba(160, 120, 255, 0.55),
+      0 0 170px rgba(124, 92, 255, 0.25);
+    opacity: 0;
+    pointer-events: none;
+    will-change: opacity;
+    animation: respirar-brillo 4s ease-in-out infinite alternate;
   }
   .anillo::after {
     content: '';
@@ -484,11 +499,9 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     border-radius: 50%;
     background: radial-gradient(circle at 50% 35%, #3b1fb8, #1a0d5c 55%, var(--surface-solid));
   }
-  @keyframes girar-brillo {
-    50% {
-      box-shadow:
-        0 0 80px rgba(160, 120, 255, 0.7),
-        0 0 170px rgba(124, 92, 255, 0.3);
+  @keyframes respirar-brillo {
+    to {
+      opacity: 1;
     }
   }
   .terminal {

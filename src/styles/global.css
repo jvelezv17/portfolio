@@ -208,3 +208,42 @@ h2 {
     transform: none;
   }
 }
+
+/* ---------- Modo liviano ----------
+   Se activa solo cuando el navegador dibuja por software (Chrome sin aceleración por
+   hardware, máquinas virtuales…). Ahí los desenfoques y brillos animados se recalculan con
+   el procesador en cada cuadro y la página se pone pesada, así que se apagan.
+   Lo importante se queda: el avatar animado de Contacto con su torbellino y el bicho. */
+.liviano .vidrio,
+.liviano .barra {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+.liviano .vidrio {
+  background: rgba(18, 12, 48, 0.94) !important;
+}
+.liviano .barra {
+  background: #03020a !important;
+}
+.liviano .cintas *,
+.liviano .anillo,
+.liviano .anillo::before,
+.liviano .terminal,
+.liviano .globo,
+.liviano .pedestal {
+  animation: none !important;
+}
+.liviano .cintas .halo {
+  display: none; /* los trazos gruesos desenfocados; quedan las líneas finas */
+}
+.liviano .anillo::before {
+  opacity: 0.5;
+}
+.liviano .mascota img,
+.liviano .escena img,
+.liviano .bicho,
+.liviano .torbellino,
+.liviano .pedestal,
+.liviano .sombra {
+  filter: none !important;
+}
