@@ -1,0 +1,6 @@
+# Archivos binarios: git no debe tocar sus bytes (convertir saltos de línea dañaría un PDF o una imagen).
+*.pdf  binary
+*.png  binary
+*.jpg  binary
+*.webp binary
+*.ico  binary
