@@ -177,7 +177,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
               <ul class="iconos">
                 {g.items.map((t) => (
                   <li class="tec vidrio" data-testid="tecnologia">
-                    <Icono slug={t.icono} nombre={t.nombre} mono={t.mono} />
+                    <Icono slug={t.icono} nombre={t.nombre} mono={t.mono} color={t.color} />
                     <span>{t.nombre}</span>
                   </li>
                 ))}

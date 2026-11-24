@@ -1,13 +1,13 @@
 // `icono` es el nombre en la librería simple-icons (https://simpleicons.org).
 // Sin `icono`, el sitio muestra un monograma con las iniciales.
 
-export type Tecnologia = { nombre: string; icono?: string; mono?: string };
+export type Tecnologia = { nombre: string; icono?: string; mono?: string; color?: string };
 
 export const stack: { grupo: string; items: Tecnologia[] }[] = [
   {
     grupo: 'Automatización',
     items: [
-      { nombre: 'Playwright', mono: 'PW' },
+      { nombre: 'Playwright', mono: 'PW', color: '#2EAD33' },
       { nombre: 'Cypress', icono: 'siCypress' },
       { nombre: 'Selenium', icono: 'siSelenium' },
       { nombre: 'Cucumber', icono: 'siCucumber' },

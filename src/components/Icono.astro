@@ -7,11 +7,21 @@ interface Props {
   slug?: string; // ej. 'siCypress' — ver https://simpleicons.org
   nombre: string;
   mono?: string; // monograma a mano, ej. 'PW'
+  color?: string; // color del monograma, ej. '#2EAD33'
   tamano?: number;
 }
 
-const { slug, nombre, mono, tamano = 28 } = Astro.props;
-const icono = slug ? (iconos as Record<string, { path: string } | undefined>)[slug] : undefined;
+const { slug, nombre, mono, color: colorMono, tamano = 28 } = Astro.props;
+const icono = slug ? (iconos as Record<string, { path: string; hex: string } | undefined>)[slug] : undefined;
+
+// Color original de la marca. Si es casi negro (GitHub, Java, JSON…) se usa blanco,
+// que es la versión oficial de esos logos sobre fondo oscuro.
+function colorMarca(hex: string) {
+  const [r, g, b] = [0, 2, 4].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255);
+  const luminancia = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  return luminancia < 0.12 ? '#ffffff' : `#${hex}`;
+}
+const color = icono ? colorMarca(icono.hex) : undefined;
 const monograma = mono ?? nombre
   .split(/[\s.\-()]+/)
   .filter(Boolean)
@@ -24,10 +34,14 @@ const monograma = mono ?? nombre
 {
   icono ? (
     <svg class="icono" viewBox="0 0 24 24" width={tamano} height={tamano} aria-hidden="true">
-      <path d={icono.path} fill="currentColor" />
+      <path d={icono.path} fill={color} />
     </svg>
   ) : (
-    <span class="icono monograma" style={`--t:${tamano}px`} aria-hidden="true">
+    <span
+      class="icono monograma"
+      style={`--t:${tamano}px;${colorMono ? `color:${colorMono}` : ''}`}
+      aria-hidden="true"
+    >
       {monograma}
     </span>
   )
