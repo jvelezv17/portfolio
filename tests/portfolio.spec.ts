@@ -176,6 +176,17 @@ test.describe('Easter egg: el bug que camina', () => {
     await expect(page.getByTestId('mascota-404')).toBeVisible();
   });
 
+  test('el bicho pasa POR ENCIMA de la foto de perfil (no se esconde detrás)', async ({ page }) => {
+    await page.goto('/?bicho');
+    await expect(page.getByTestId('bicho')).toBeVisible({ timeout: 5_000 });
+    const f = (await page.getByTestId('foto-perfil').boundingBox())!;
+    const [x, y] = [f.x + f.width / 2, f.y + f.height / 2];
+    // se fija el bicho justo en el centro de la foto
+    await page.addStyleTag({ content: `.bicho{transform:translate(${x - 17}px,${y - 22}px)!important}` });
+    const arriba = await page.evaluate(([px, py]) => !!document.elementFromPoint(px, py)?.closest('.bicho'), [x, y]);
+    expect(arriba, 'en el centro de la foto de perfil, lo que queda arriba debe ser el bicho').toBe(true);
+  });
+
   test('la página del easter egg no se indexa y no tiene su propio bicho', async ({ page }) => {
     await page.goto('/bug-encontrado/');
     await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', 'noindex');
