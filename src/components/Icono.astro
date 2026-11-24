@@ -1,6 +1,8 @@
 ---
-// Icono de una tecnología. Usa la librería simple-icons (logos en SVG, licencia CC0).
-// Si la tecnología no tiene logo en la librería, muestra un monograma (ej. "PW").
+// Icono de una tecnología, en este orden:
+// 1. imagen propia en public/logos/ (si `slug` empieza con '/')
+// 2. logo de la librería simple-icons (SVG, licencia CC0) con su color de marca
+// 3. monograma con las iniciales (ej. "ST")
 import * as iconos from 'simple-icons';
 
 interface Props {
@@ -12,7 +14,9 @@ interface Props {
 }
 
 const { slug, nombre, mono, color: colorMono, tamano = 28 } = Astro.props;
-const icono = slug ? (iconos as Record<string, { path: string; hex: string } | undefined>)[slug] : undefined;
+// Si `slug` empieza con '/', es una imagen propia en public/ (ej. '/logos/playwright.png').
+const imagen = slug?.startsWith('/') ? `${import.meta.env.BASE_URL.replace(/\/$/, '')}${slug}` : undefined;
+const icono = slug && !imagen ?(iconos as Record<string, { path: string; hex: string } | undefined>)[slug] : undefined;
 
 // Color original de la marca. Si es casi negro (GitHub, Java, JSON…) se usa blanco,
 // que es la versión oficial de esos logos sobre fondo oscuro.
@@ -32,7 +36,9 @@ const monograma = mono ?? nombre
 ---
 
 {
-  icono ? (
+  imagen ? (
+    <img class="icono" src={imagen} width={tamano} height={tamano} alt="" loading="lazy" decoding="async" />
+  ) : icono ? (
     <svg class="icono" viewBox="0 0 24 24" width={tamano} height={tamano} aria-hidden="true">
       <path d={icono.path} fill={color} />
     </svg>

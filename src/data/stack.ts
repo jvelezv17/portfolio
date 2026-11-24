@@ -1,4 +1,5 @@
-// `icono` es el nombre en la librería simple-icons (https://simpleicons.org).
+// `icono`: nombre en simple-icons (https://simpleicons.org), ej. 'siCypress',
+// o una imagen propia en public/logos/, ej. '/logos/java.png'.
 // Sin `icono`, el sitio muestra un monograma con las iniciales.
 
 export type Tecnologia = { nombre: string; icono?: string; mono?: string; color?: string };
@@ -7,7 +8,7 @@ export const stack: { grupo: string; items: Tecnologia[] }[] = [
   {
     grupo: 'Automatización',
     items: [
-      { nombre: 'Playwright', mono: 'PW', color: '#2EAD33' },
+      { nombre: 'Playwright', icono: '/logos/playwright.png' },
       { nombre: 'Cypress', icono: 'siCypress' },
       { nombre: 'Selenium', icono: 'siSelenium' },
       { nombre: 'Cucumber', icono: 'siCucumber' },
@@ -19,7 +20,7 @@ export const stack: { grupo: string; items: Tecnologia[] }[] = [
       { nombre: 'TypeScript', icono: 'siTypescript' },
       { nombre: 'JavaScript', icono: 'siJavascript' },
       { nombre: 'SQL', icono: 'siMysql' },
-      { nombre: 'Java', icono: 'siOpenjdk' },
+      { nombre: 'Java', icono: '/logos/java.png' },
       { nombre: 'Python', icono: 'siPython' },
     ],
   },
@@ -27,7 +28,7 @@ export const stack: { grupo: string; items: Tecnologia[] }[] = [
     grupo: 'APIs y datos',
     items: [
       { nombre: 'Postman', icono: 'siPostman' },
-      { nombre: 'SoapUI', mono: 'SU' },
+      { nombre: 'SoapUI', icono: '/logos/soapui.png' },
       { nombre: 'JSON', icono: 'siJson' },
       { nombre: 'YAML', icono: 'siYaml' },
     ],
@@ -36,8 +37,8 @@ export const stack: { grupo: string; items: Tecnologia[] }[] = [
     grupo: 'Gestión de pruebas',
     items: [
       { nombre: 'Jira', icono: 'siJira' },
-      { nombre: 'Xray', mono: 'XR' },
-      { nombre: 'TestRail', mono: 'TR' },
+      { nombre: 'Xray', icono: '/logos/xray.png' },
+      { nombre: 'TestRail', icono: '/logos/testrail.png' },
       { nombre: 'SpiraTeam', mono: 'ST' },
     ],
   },

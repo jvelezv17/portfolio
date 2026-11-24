@@ -53,7 +53,17 @@ test.describe('Carga', () => {
     const tecnologias = page.getByTestId('tecnologia');
     expect(await tecnologias.count()).toBeGreaterThan(10);
     for (const t of await tecnologias.all()) {
-      await expect(t.locator('svg.icono, .icono.monograma')).toHaveCount(1);
+      await expect(t.locator('svg.icono, img.icono, .icono.monograma')).toHaveCount(1);
+    }
+
+    // Los logos propios (public/logos) deben descargar de verdad
+    const logos = page.locator('img.icono');
+    expect(await logos.count()).toBeGreaterThan(0);
+    for (const logo of await logos.all()) {
+      await logo.scrollIntoViewIfNeeded();
+      await expect
+        .poll(() => logo.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0))
+        .toBe(true);
     }
   });
 });
