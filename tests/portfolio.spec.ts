@@ -28,6 +28,9 @@ test.describe('Carga', () => {
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(perfil.nombre);
     await expect(page.getByText(perfil.rol).first()).toBeVisible();
     await expect(page.getByText(perfil.frase)).toBeVisible();
+    // el país, con la bandera
+    await expect(page.getByTestId('pais')).toContainText('COL');
+    await expect(page.getByRole('img', { name: 'Bandera de Colombia' })).toBeVisible();
     expect(errores).toEqual([]);
   });
 
@@ -113,8 +116,46 @@ test.describe('Avatar animado', () => {
     await expect(texto).toHaveText('¡Hablemos!', { timeout: 5_000 });
     await expect(globo).not.toHaveClass(/oculto|torbellino-activo/);
 
-    // y en la siguiente voltereta, el globo gira
-    await expect(page.locator('.globo-cuerpo')).toHaveClass(/gira/, { timeout: 5_000 });
+    // y en la siguiente voltereta se repite: el globo vuelve al torbellino y se escribe de nuevo
+    await expect(globo).toHaveClass(/torbellino-activo/, { timeout: 5_000 });
+    await expect(texto).toHaveText('', { timeout: 1_000 });
+    await expect(texto).toHaveText('¡Hablemos!', { timeout: 5_000 });
+  });
+});
+
+test.describe('Easter egg: el bug que camina', () => {
+  test('el bicho aparece, camina y al atraparlo lleva a "¡Cazaste un bug!"', async ({ page }) => {
+    await page.goto('/?bicho'); // ?bicho lo hace salir enseguida
+    const bicho = page.getByTestId('bicho');
+    await expect(bicho).toBeVisible({ timeout: 5_000 });
+
+    // camina: su posición cambia con el tiempo
+    const antes = await bicho.boundingBox();
+    await expect.poll(async () => {
+      const ahora = await bicho.boundingBox();
+      return Math.hypot(ahora!.x - antes!.x, ahora!.y - antes!.y);
+    }).toBeGreaterThan(10);
+
+    // atraparlo (se mueve, así que el click se envía directo al botón)
+    await bicho.dispatchEvent('click');
+    await expect(bicho).toHaveClass(/cazado/);
+    await expect(page).toHaveURL(/\/bug-encontrado\/$/);
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText('¡Cazaste un bug!');
+    await expect(page.getByTestId('ticket-bug')).toContainText('BUG-404');
+    await expect(page.getByTestId('mascota-404')).toBeVisible();
+  });
+
+  test('la página del easter egg no se indexa y no tiene su propio bicho', async ({ page }) => {
+    await page.goto('/bug-encontrado/');
+    await expect(page.locator('meta[name="robots"]')).toHaveAttribute('content', 'noindex');
+    await expect(page.getByTestId('bicho')).toHaveCount(0);
+  });
+
+  test('con "reducir movimiento" el bicho no sale', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.goto('/?bicho');
+    await page.waitForTimeout(800);
+    await expect(page.getByTestId('bicho')).toBeHidden();
   });
 });
 

@@ -1,0 +1,115 @@
+---
+// Easter egg: a esta página se llega al atrapar el bicho que camina por el sitio.
+import Base from '../layouts/Base.astro';
+import EscenaCaida from '../components/EscenaCaida.astro';
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const hoy = new Date().toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' });
+---
+
+<Base titulo="¡Cazaste un bug!" descripcion="Easter egg: atrapaste el bug que anda suelto por el portfolio." sinBicho noIndexar>
+  <EscenaCaida>
+    <p class="eyebrow">Easter egg</p>
+    <h1 class="degradado">¡Cazaste un bug!</h1>
+    <p class="muted bajada">Buen ojo de QA. Ya quedó reportado:</p>
+
+    <article class="ticket vidrio" aria-label="Ticket del bug" data-testid="ticket-bug">
+      <header>
+        <span class="clave">BUG-404</span>
+        <span class="estado">✓ Cazado</span>
+      </header>
+      <h2>Un bicho caminaba por el portfolio</h2>
+      <dl>
+        <div><dt>Reportado por</dt><dd>Tú 🔍</dd></div>
+        <div><dt>Prioridad</dt><dd>Alta (se movía mucho)</dd></div>
+        <div><dt>Fecha</dt><dd>{hoy}</dd></div>
+      </dl>
+      <p class="pasos-titulo">Pasos para reproducir</p>
+      <ol>
+        <li>Entrar al portfolio.</li>
+        <li>Esperar a que aparezca un bicho.</li>
+        <li>Atraparlo (él no se deja).</li>
+      </ol>
+      <p class="resultado"><strong>Resultado esperado:</strong> que alguien lo encuentre antes que los usuarios. ✅</p>
+    </article>
+
+    <div class="acciones">
+      <a class="boton primario" href={`${base}/`}>Volver al inicio</a>
+      <a class="boton" href={`${base}/#contacto`}>Contratar a este QA</a>
+    </div>
+  </EscenaCaida>
+</Base>
+
+<style>
+  .ticket {
+    max-width: 460px;
+    padding: 18px 20px;
+    margin: 0 0 1.75rem;
+    text-align: left;
+    font-size: 0.92rem;
+    border-left: 3px solid var(--violeta-400);
+  }
+  .ticket header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+  .clave {
+    font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+    color: var(--violeta-300);
+    font-weight: 700;
+  }
+  .estado {
+    padding: 2px 10px;
+    border-radius: 999px;
+    background: rgba(126, 226, 184, 0.14);
+    color: #7ee2b8;
+    font-weight: 700;
+    font-size: 0.8rem;
+  }
+  .ticket h2 {
+    font-size: 1.05rem;
+    margin: 0 0 10px;
+  }
+  dl {
+    display: grid;
+    gap: 4px;
+    margin: 0 0 10px;
+  }
+  dl div {
+    display: flex;
+    gap: 8px;
+  }
+  dt {
+    color: var(--muted);
+    min-width: 110px;
+  }
+  dd {
+    margin: 0;
+  }
+  .pasos-titulo {
+    margin: 0;
+    color: var(--muted);
+  }
+  ol {
+    margin: 4px 0 10px;
+    padding-left: 1.2rem;
+  }
+  .resultado {
+    margin: 0;
+  }
+  .acciones {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  @media (max-width: 760px) {
+    .ticket {
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .acciones {
+      justify-content: center;
+    }
+  }
+</style>

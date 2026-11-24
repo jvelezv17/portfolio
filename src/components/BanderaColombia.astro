@@ -1,0 +1,24 @@
+---
+// Bandera de Colombia en SVG (el emoji 🇨🇴 no se ve como bandera en Windows).
+// Proporción oficial 3:2 — amarillo la mitad, azul y rojo un cuarto cada uno.
+interface Props {
+  alto?: number;
+}
+const { alto = 14 } = Astro.props;
+---
+
+<svg class="bandera" viewBox="0 0 30 20" height={alto} width={(alto * 3) / 2} role="img" aria-label="Bandera de Colombia">
+  <rect width="30" height="10" fill="#FCD116" />
+  <rect y="10" width="30" height="5" fill="#003893" />
+  <rect y="15" width="30" height="5" fill="#CE1126" />
+</svg>
+
+<style>
+  .bandera {
+    display: inline-block;
+    flex: none;
+    border-radius: 3px;
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.18);
+    vertical-align: -2px;
+  }
+</style>

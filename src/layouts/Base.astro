@@ -1,13 +1,16 @@
 ---
 import '../styles/global.css';
 import { perfil } from '../data/perfil';
+import Bicho from '../components/Bicho.astro';
 
 interface Props {
   titulo?: string;
   descripcion?: string;
+  sinBicho?: boolean; // en las páginas de error no sale el bicho del easter egg
+  noIndexar?: boolean;
 }
 
-const { titulo, descripcion = perfil.frase } = Astro.props;
+const { titulo, descripcion = perfil.frase, sinBicho = false, noIndexar = false } = Astro.props;
 const tituloCompleto = titulo ? `${titulo} · ${perfil.nombre}` : `${perfil.nombre} · ${perfil.rol}`;
 const canonical = new URL(Astro.url.pathname, Astro.site);
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
@@ -21,6 +24,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     <title>{tituloCompleto}</title>
     <meta name="description" content={descripcion} />
     <meta name="theme-color" content="#03020a" />
+    {noIndexar && <meta name="robots" content="noindex" />}
     <link rel="canonical" href={canonical} />
     <link rel="icon" type="image/png" href={`${base}/favicon.png`} />
     <meta property="og:title" content={tituloCompleto} />
@@ -64,6 +68,7 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
         </p>
       </div>
     </footer>
+    {!sinBicho && <Bicho />}
 
     <script>
       // Hace aparecer suavemente los elementos .revelar cuando entran en pantalla.
