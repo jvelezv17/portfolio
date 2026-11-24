@@ -43,6 +43,19 @@ Un caso de estudio nuevo = agregar un objeto a `proyectos.ts`. La página de det
 - **Enlaces:** recorre todo el sitio buscando enlaces internos rotos; las anclas apuntan a ids que existen; los externos son https y abren en otra pestaña con `rel="noopener"`.
 - **Calidad:** sin scroll horizontal en móvil y sin problemas de accesibilidad graves (axe-core, WCAG 2 AA).
 
+## Avatar animado
+
+Los videos del editor de avatar no traen transparencia, así que se exportan con **fondo azul** (no verde: las antenas son verdes)
+y se convierten a WebP animado transparente con ffmpeg (`npx ffmpeg-static` o cualquier ffmpeg con libwebp):
+
+```bash
+ffmpeg -i entrada.webm -vf "fps=30,crop=352:512:46:0,colorkey=0x0000ff:0.32:0.10,despill=type=blue:mix=0.6:expand=0" \
+  -c:v libwebp_anim -lossless 0 -quality 85 -compression_level 6 -loop 0 -an public/avatar/nombre.webp
+```
+
+`crop` recorta los lados vacíos (ajústalo si la animación se mueve más). Para la versión fija (quien tiene
+"reducir movimiento" activado) se guarda un cuadro del WebP como `nombre-quieto.webp`.
+
 ## Publicarlo gratis
 
 Ver [PUBLICAR.md](PUBLICAR.md).

@@ -45,7 +45,7 @@ test.describe('Carga', () => {
 
   test('el avatar carga y cada tecnología del stack tiene icono', async ({ page }) => {
     await page.goto('/');
-    const avatar = page.getByRole('img', { name: `Avatar de ${perfil.nombre}` });
+    const avatar = page.getByRole('img', { name: `Avatar de ${perfil.nombre}`, exact: true });
     await expect(avatar).toBeVisible();
     // naturalWidth > 0 = la imagen realmente descargó (no un ícono roto)
     expect(await avatar.evaluate((img: HTMLImageElement) => img.naturalWidth)).toBeGreaterThan(0);
@@ -65,6 +65,34 @@ test.describe('Carga', () => {
         .poll(() => logo.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0))
         .toBe(true);
     }
+  });
+});
+
+test.describe('Avatar animado', () => {
+  test('en Contacto carga el avatar animado y pesa poco', async ({ page, request }) => {
+    await page.goto('/');
+    const mascota = page.getByTestId('mascota-contacto');
+    await mascota.scrollIntoViewIfNeeded(); // es lazy: solo carga al llegar a Contacto
+    await expect
+      .poll(() => mascota.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0))
+      .toBe(true);
+    expect(await mascota.evaluate((img: HTMLImageElement) => img.currentSrc)).toContain('/avatar/contacto.webp');
+
+    // WebP animado: el archivo trae el bloque ANIM y no se pasa de 1,5 MB
+    const res = await request.get('/avatar/contacto.webp');
+    const bytes = await res.body();
+    expect(bytes.includes(Buffer.from('ANIM')), 'el WebP no es animado').toBe(true);
+    expect(bytes.length).toBeLessThan(1.5 * 1024 * 1024);
+  });
+
+  test('con "reducir movimiento" muestra la imagen fija', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.goto('/');
+    const mascota = page.getByTestId('mascota-contacto');
+    await mascota.scrollIntoViewIfNeeded();
+    await expect
+      .poll(() => mascota.evaluate((img: HTMLImageElement) => img.currentSrc))
+      .toContain('/avatar/contacto-quieto.webp');
   });
 });
 
