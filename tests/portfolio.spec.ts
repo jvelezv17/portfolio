@@ -367,7 +367,7 @@ test.describe('Modo liviano (sin aceleración por hardware)', () => {
     // sin desenfoque de vidrio ni cintas animadas
     const vidrio = await page.locator('.vidrio').first().evaluate((el) => getComputedStyle(el).backdropFilter);
     expect(vidrio).toBe('none');
-    const animCintas = await page.locator('.cintas g').first().evaluate((el) => getComputedStyle(el).animationName);
+    const animCintas = await page.locator('.cintas .capa').first().evaluate((el) => getComputedStyle(el).animationName);
     expect(animCintas).toBe('none');
 
     // la foto de perfil se queda fija…
@@ -506,4 +506,24 @@ test.describe('Descargar CV', () => {
       expect(texto).not.toMatch(/t3rsc|tri ia digital|adel ia|300 605/i);
     });
   }
+});
+
+test.describe('iPhone / iPad', () => {
+  test('en iOS las cintas quedan quietas pero el avatar sigue animado', async ({ page }) => {
+    await page.goto('/?ios=1');
+    await expect(page.locator('html')).toHaveClass(/\bios\b/);
+    const anim = await page.locator('.cintas .capa').first().evaluate((el) => getComputedStyle(el).animationName);
+    expect(anim).toBe('none');
+    // la foto de perfil animada se sigue cargando (no es modo liviano)
+    await expect
+      .poll(() => page.getByTestId('foto-perfil').evaluate((img: HTMLImageElement) => img.currentSrc), { timeout: 10_000 })
+      .toContain('/avatar/perfil.webp');
+  });
+
+  test('fuera de iOS las cintas sí se mueven', async ({ page }) => {
+    await page.goto('/');
+    await expect(page.locator('html')).not.toHaveClass(/\bios\b/);
+    const anim = await page.locator('.cintas .capa-a').evaluate((el) => getComputedStyle(el).animationName);
+    expect(anim).not.toBe('none');
+  });
 });

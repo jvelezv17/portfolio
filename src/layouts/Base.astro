@@ -60,6 +60,16 @@ const inicio = `${base}${prefijo(idioma)}/`;
           }
         }
         if (liviano) document.documentElement.classList.add('liviano');
+
+        // iPhone / iPad (todos sus navegadores usan el motor de Safari): las cintas de luz
+        // quedan quietas (ver .ios en global.css). Se reportó que el inicio y la 404 se
+        // trababan en iOS, y ahí es donde están las cintas. ?ios=1 lo fuerza para probar.
+        var esIos =
+          /iPhone|iPad|iPod/.test(navigator.userAgent) ||
+          (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1); // iPad con iPadOS
+        if (esIos || new URLSearchParams(location.search).get('ios') === '1') {
+          document.documentElement.classList.add('ios');
+        }
       })();
     </script>
     <title>{tituloCompleto}</title>

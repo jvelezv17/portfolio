@@ -247,3 +247,10 @@ h2 {
 .liviano .sombra {
   filter: none !important;
 }
+
+/* ---------- iPhone / iPad ----------
+   Las cintas de luz quedan quietas (conservan su brillo). En iOS el inicio y la 404, que es
+   donde están las cintas, se trababan; el avatar de Contacto, que no tiene cintas, iba bien. */
+.ios .cintas * {
+  animation: none !important;
+}
