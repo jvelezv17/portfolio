@@ -156,6 +156,13 @@ test.describe('Navegación', () => {
     const res = await page.goto('/no-existe');
     expect(res?.status()).toBe(404);
     await expect(page.getByRole('heading', { name: 'Esta página no existe' })).toBeVisible();
+    // el avatar cayéndose carga y es un WebP animado
+    const mascota = page.getByTestId('mascota-404');
+    await expect
+      .poll(() => mascota.evaluate((img: HTMLImageElement) => img.complete && img.naturalWidth > 0))
+      .toBe(true);
+    const webp = await page.request.get('/avatar/404.webp');
+    expect((await webp.body()).includes(Buffer.from('ANIM')), 'el WebP de la 404 no es animado').toBe(true);
     await page.getByRole('link', { name: 'Volver al inicio' }).click();
     await expect(page.getByRole('heading', { level: 1 })).toHaveText(perfil.nombre);
   });
