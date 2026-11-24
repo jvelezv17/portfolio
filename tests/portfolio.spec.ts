@@ -13,7 +13,7 @@ function vigilarErrores(page: Page) {
   });
   page.on('pageerror', (err) => errores.push(`js: ${err.message}`));
   page.on('response', (res) => {
-    const propio = res.url().startsWith('http://localhost');
+    const propio = res.url().startsWith(process.env.PRUEBAS_URL ?? 'http://localhost');
     if (propio && res.status() >= 400 && !res.url().includes('/no-existe')) {
       errores.push(`${res.status()} ${res.url()}`);
     }

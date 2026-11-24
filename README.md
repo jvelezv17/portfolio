@@ -2,8 +2,10 @@
 
 [![Pruebas](https://github.com/jvelezv17/portfolio/actions/workflows/pruebas.yml/badge.svg)](https://github.com/jvelezv17/portfolio/actions/workflows/pruebas.yml)
 
+**🌐 En vivo: [juanvelezqa.netlify.app](https://juanvelezqa.netlify.app)** · [English](https://juanvelezqa.netlify.app/en/)
+
 Portfolio personal de QA Automation hecho con [Astro](https://astro.build) y probado con [Playwright](https://playwright.dev).
-Cada cambio corre las pruebas en GitHub Actions (escritorio y móvil).
+Cada cambio corre las pruebas en GitHub Actions (escritorio y móvil) y Netlify lo publica solo.
 
 ## Correrlo en tu PC
 
@@ -21,8 +23,9 @@ npm run dev        # abre http://localhost:4321 y se recarga solo al guardar
 | `npm run preview` | Sirve lo compilado, igual a como queda publicado |
 | `npm test` | Compila y corre las pruebas Playwright |
 | `npm run test:ui` | Las mismas pruebas, en la interfaz visual de Playwright |
+| `npm run test:vivo` | Las mismas pruebas contra el sitio **publicado** (juanvelezqa.netlify.app) |
 | `npm run pendientes` | Lista lo que sigue marcado como `[POR COMPLETAR]` |
-| `npm run og` | Regenera `public/og.png`, la imagen que sale al compartir el link (córrelo si cambias nombre, rol, frase o avatar) |
+| `npm run og` | Regenera `public/og.png` y `public/og-en.png`, las imágenes que salen al compartir el link (córrelo si cambias nombre, rol, frase o avatar) |
 
 La primera vez que corras las pruebas: `npx playwright install chromium`.
 
