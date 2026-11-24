@@ -25,7 +25,7 @@ export const cifras = [
 ];
 
 export const formacion = [
-  { titulo: 'Ingeniería de Software', lugar: 'Universidad Tecnológica del Oriente', fechas: 'Último semestre (en curso)' },
+  { titulo: 'Ingeniería de Software', lugar: 'Universidad Tecnológica del Oriente', fechas: 'Último semestre · Grado esperado: 2027' },
   { titulo: 'Tecnólogo en Análisis y Desarrollo de Software (ADSO)', lugar: 'SENA', fechas: 'Mar 2023 – Sep 2025' },
 ];
 

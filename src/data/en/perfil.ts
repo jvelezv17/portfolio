@@ -19,7 +19,7 @@ export const cifras = [
 ];
 
 export const formacion = [
-  { titulo: 'B.S. in Software Engineering', lugar: 'Universidad Tecnológica del Oriente', fechas: 'Final semester (in progress)' },
+  { titulo: 'B.S. in Software Engineering', lugar: 'Universidad Tecnológica del Oriente', fechas: 'Final semester · Expected graduation: 2027' },
   {
     titulo: 'Software Analysis and Development Technologist',
     lugar: 'SENA (National Training Service), Colombia',
