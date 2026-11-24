@@ -265,6 +265,8 @@ test.describe('Enlaces', () => {
 
       const res = await request.get(ruta);
       expect(res.status(), `enlace roto: ${ruta}`).toBe(200);
+      // solo se exploran páginas HTML; los archivos (PDF del CV, imágenes) basta con que respondan 200
+      if (!(res.headers()['content-type'] ?? '').includes('text/html')) continue;
 
       await page.goto(ruta);
       const hrefs = await page.locator('a[href]').evaluateAll((as) => as.map((a) => a.getAttribute('href')!));
@@ -466,4 +468,27 @@ test.describe('Versión en inglés', () => {
       expect(graves.map((v) => `${v.id}: ${v.help}`), `en ${ruta}`).toEqual([]);
     }
   });
+});
+
+test.describe('Descargar CV', () => {
+  for (const [ruta, boton, pdf] of [
+    ['/', 'Descargar CV', '/cv-juan-velez-es.pdf'],
+    ['/en/', 'Download CV', '/cv-juan-velez-en.pdf'],
+  ] as const) {
+    test(`en ${ruta} el botón "${boton}" baja el CV del idioma correcto`, async ({ page, request }) => {
+      await page.goto(ruta);
+      const enlace = page.getByRole('link', { name: boton });
+      await expect(enlace).toBeVisible();
+      await expect(enlace).toHaveAttribute('href', pdf);
+      await expect(enlace).toHaveAttribute('download', /.*/);
+
+      const res = await request.get(pdf);
+      expect(res.status()).toBe(200);
+      const archivo = await res.body();
+      expect(archivo.subarray(0, 5).toString(), 'no es un PDF').toBe('%PDF-');
+      // confidencialidad: el CV público no puede llevar nada del trabajo ni el teléfono
+      const texto = archivo.toString('latin1');
+      expect(texto).not.toMatch(/t3rsc|tri ia digital|adel ia|300 605/i);
+    });
+  }
 });

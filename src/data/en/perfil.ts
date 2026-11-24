@@ -7,7 +7,7 @@ export const perfil = {
   rol: 'QA Automation Lead',
   frase: 'I build automated tests that catch bugs before users do, and explain whose problem they are.',
   ubicacion: 'Colombia · Remote (open to Medellín or Bogotá)',
-  cv: '', // CV en inglés, ej. '/cv-juan-velez-en.pdf' (el PDF va en public/)
+  cv: '/cv-juan-velez-en.pdf', // CV en inglés (public/)
   resumen:
     '2.5+ years in test automation and quality assurance for web and mobile apps. I lead QA at an HR-tech SaaS platform, where I built the automation framework from scratch with Playwright and TypeScript. I come from software development, so I understand the code I test.',
 };
