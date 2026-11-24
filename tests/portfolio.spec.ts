@@ -82,24 +82,37 @@ test.describe('Carga', () => {
 });
 
 test.describe('Avatar animado', () => {
-  test('la foto de perfil empieza fija y pasa a animada cuando la página ya cargó', async ({ page }) => {
-    // el HTML trae la imagen fija (no frena la carga del inicio); la animada va aparte en data-animado
-    const html = await (await page.request.get('/')).text();
-    expect(html).toMatch(/<img[^>]*src="\/avatar\/perfil-quieto\.webp"[^>]*data-animado="\/avatar\/perfil\.webp"/);
+  test('la foto de perfil empieza fija y, ya cargada la página, se anima con un video MP4', async ({ page, request }) => {
+    // el HTML trae la imagen fija (no frena la carga del inicio); el video va aparte en data-animado
+    const html = await (await request.get('/')).text();
+    expect(html).toMatch(/<img[^>]*src="\/avatar\/perfil-quieto\.webp"[^>]*data-animado="\/avatar\/perfil\.mp4"/);
+    expect(html, 'el video no debe venir en el HTML (se agrega después de cargar)').not.toContain('<video');
+
+    // el video es liviano (antes el WebP animado pesaba 1,4 MB)
+    const mp4 = await request.get('/avatar/perfil.mp4');
+    expect(mp4.status()).toBe(200);
+    expect((await mp4.body()).length).toBeLessThan(400 * 1024);
 
     await page.goto('/');
-    const foto = page.getByTestId('foto-perfil');
-    await expect
-      .poll(() => foto.evaluate((img: HTMLImageElement) => img.currentSrc), { timeout: 10_000 })
-      .toContain('/avatar/perfil.webp');
-    expect(await foto.evaluate((img: HTMLImageElement) => img.naturalWidth)).toBeGreaterThan(0);
+    const puedeMp4 = await page.evaluate(() => document.createElement('video').canPlayType('video/mp4; codecs="avc1.640028"'));
+    if (puedeMp4) {
+      const video = page.getByTestId('foto-perfil-video');
+      await expect(video).toHaveClass(/lista/, { timeout: 10_000 }); // ya está reproduciendo
+      expect(await video.evaluate((v: HTMLVideoElement) => [v.muted, v.loop, v.paused])).toEqual([true, true, false]);
+    } else {
+      // navegador sin H.264: se queda la imagen fija, sin errores
+      await page.waitForTimeout(2500);
+      await expect(page.getByTestId('foto-perfil-video')).toHaveCount(0);
+      await expect(page.getByTestId('foto-perfil')).toBeVisible();
+    }
   });
 
-  test('con "reducir movimiento" la foto de perfil se queda fija', async ({ page }) => {
+  test('con "reducir movimiento" la foto de perfil se queda fija (no se carga el video)', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto('/');
     await page.waitForLoadState('load');
     await page.waitForTimeout(2500);
+    await expect(page.getByTestId('foto-perfil-video')).toHaveCount(0);
     expect(await page.getByTestId('foto-perfil').evaluate((img: HTMLImageElement) => img.currentSrc)).toContain(
       '/avatar/perfil-quieto.webp',
     );
@@ -370,12 +383,10 @@ test.describe('Modo liviano (sin aceleración por hardware)', () => {
     const animCintas = await page.locator('.cintas .capa').first().evaluate((el) => getComputedStyle(el).animationName);
     expect(animCintas).toBe('none');
 
-    // la foto de perfil se queda fija…
+    // la foto de perfil se queda fija (no se carga el video)…
     await page.waitForLoadState('load');
     await page.waitForTimeout(2500);
-    expect(await page.getByTestId('foto-perfil').evaluate((img: HTMLImageElement) => img.currentSrc)).toContain(
-      '/avatar/perfil-quieto.webp',
-    );
+    await expect(page.getByTestId('foto-perfil-video')).toHaveCount(0);
 
     // …pero el avatar de Contacto sigue animado y el globo sigue escribiendo
     await page.getByTestId('mascota-contacto').scrollIntoViewIfNeeded();
@@ -514,10 +525,10 @@ test.describe('iPhone / iPad', () => {
     await expect(page.locator('html')).toHaveClass(/\bios\b/);
     const anim = await page.locator('.cintas .capa').first().evaluate((el) => getComputedStyle(el).animationName);
     expect(anim).toBe('none');
-    // la foto de perfil animada se sigue cargando (no es modo liviano)
-    await expect
-      .poll(() => page.getByTestId('foto-perfil').evaluate((img: HTMLImageElement) => img.currentSrc), { timeout: 10_000 })
-      .toContain('/avatar/perfil.webp');
+    // la foto de perfil se sigue animando con el video (no es modo liviano)
+    const puedeMp4 = await page.evaluate(() => document.createElement('video').canPlayType('video/mp4; codecs="avc1.640028"'));
+    test.skip(!puedeMp4, 'este navegador no reproduce H.264');
+    await expect(page.getByTestId('foto-perfil-video')).toHaveClass(/lista/, { timeout: 10_000 });
   });
 
   test('fuera de iOS las cintas sí se mueven', async ({ page }) => {

@@ -43,7 +43,7 @@ const otro: Idioma = idioma === 'es' ? 'en' : 'es';
                animada (su primer cuadro es idéntico, así que el cambio no se nota). -->
           <img
             src={`${base}/avatar/perfil-quieto.webp`}
-            data-animado={`${base}/avatar/perfil.webp`}
+            data-animado={`${base}/avatar/perfil.mp4`}
             alt={`${t.avatar} ${perfil.nombre}`}
             width="400"
             height="400"
@@ -268,15 +268,25 @@ const otro: Idioma = idioma === 'es' ? 'en' : 'es';
   const ahorroDatos = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData;
   const liviano = document.documentElement.classList.contains('liviano'); // sin aceleración: se queda fija
   if (foto && !ahorroDatos && !liviano && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    const cambiar = async () => {
-      const animada = new Image();
-      animada.src = foto.dataset.animado!;
-      try {
-        await animada.decode();
-        foto.src = animada.src;
-      } catch {
-        /* si falla, se queda la imagen fija */
-      }
+    // Es un video MP4 (H.264) con el fondo violeta incluido: el chip de video lo reproduce casi sin
+    // gastar procesador (el WebP animado de antes pesaba 1,4 MB y trababa el arranque en iPhone).
+    // Se pone ENCIMA de la imagen fija y aparece cuando ya está reproduciendo; arranca en la misma pose.
+    const cambiar = () => {
+      const video = document.createElement('video');
+      video.muted = true; // requisito de iOS/Chrome para que arranque solo
+      video.defaultMuted = true;
+      video.loop = true;
+      video.playsInline = true;
+      video.autoplay = true;
+      video.setAttribute('playsinline', '');
+      video.setAttribute('aria-hidden', 'true');
+      video.className = 'foto-video';
+      video.dataset.testid = 'foto-perfil-video';
+      video.src = foto.dataset.animado!;
+      video.addEventListener('playing', () => video.classList.add('lista'), { once: true });
+      video.addEventListener('error', () => video.remove(), { once: true }); // si falla, queda la fija
+      foto.after(video);
+      video.play().catch(() => video.remove());
     };
     const cuandoPuedas = (fn: () => void) =>
       'requestIdleCallback' in window ? requestIdleCallback(fn, { timeout: 2000 }) : setTimeout(fn, 300);
@@ -502,6 +512,21 @@ const otro: Idioma = idioma === 'es' ? 'en' : 'es';
     object-fit: cover;
     border-radius: 50%;
     background: radial-gradient(circle at 50% 35%, #3b1fb8, #1a0d5c 55%, var(--surface-solid));
+  }
+  /* video de la foto de perfil (lo crea el script, por eso :global): encima de la imagen fija,
+     dentro del anillo (que tiene 6px de borde), invisible hasta que ya está reproduciendo */
+  .anillo :global(.foto-video) {
+    position: absolute;
+    inset: 6px;
+    width: calc(100% - 12px);
+    height: calc(100% - 12px);
+    object-fit: cover;
+    border-radius: 50%;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+  }
+  .anillo :global(.foto-video.lista) {
+    opacity: 1;
   }
   @keyframes respirar-brillo {
     to {
