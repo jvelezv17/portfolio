@@ -72,6 +72,29 @@ test.describe('Carga', () => {
 });
 
 test.describe('Avatar animado', () => {
+  test('la foto de perfil empieza fija y pasa a animada cuando la página ya cargó', async ({ page }) => {
+    // el HTML trae la imagen fija (no frena la carga del inicio); la animada va aparte en data-animado
+    const html = await (await page.request.get('/')).text();
+    expect(html).toMatch(/<img[^>]*src="\/avatar\/perfil-quieto\.webp"[^>]*data-animado="\/avatar\/perfil\.webp"/);
+
+    await page.goto('/');
+    const foto = page.getByTestId('foto-perfil');
+    await expect
+      .poll(() => foto.evaluate((img: HTMLImageElement) => img.currentSrc), { timeout: 10_000 })
+      .toContain('/avatar/perfil.webp');
+    expect(await foto.evaluate((img: HTMLImageElement) => img.naturalWidth)).toBeGreaterThan(0);
+  });
+
+  test('con "reducir movimiento" la foto de perfil se queda fija', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.goto('/');
+    await page.waitForLoadState('load');
+    await page.waitForTimeout(2500);
+    expect(await page.getByTestId('foto-perfil').evaluate((img: HTMLImageElement) => img.currentSrc)).toContain(
+      '/avatar/perfil-quieto.webp',
+    );
+  });
+
   test('en Contacto carga el avatar animado y pesa poco', async ({ page, request }) => {
     await page.goto('/');
     const mascota = page.getByTestId('mascota-contacto');

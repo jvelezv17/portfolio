@@ -1,10 +1,8 @@
 ---
-import { Image } from 'astro:assets';
 import Base from '../layouts/Base.astro';
 import Cintas from '../components/Cintas.astro';
 import Icono from '../components/Icono.astro';
 import BanderaColombia from '../components/BanderaColombia.astro';
-import avatar from '../assets/avatar.png';
 import { perfil, formacion, idiomas, proyectosPersonales, cifras } from '../data/perfil';
 import { proyectos } from '../data/proyectos';
 import { experiencia } from '../data/experiencia';
@@ -34,13 +32,17 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
       <div class="hero-avatar">
         <div class="anillo">
-          <Image
-            src={avatar}
+          <!-- Empieza con la imagen fija (pesa poco) y, cuando la página ya cargó, se cambia por la
+               animada (su primer cuadro es idéntico, así que el cambio no se nota). -->
+          <img
+            src={`${base}/avatar/perfil-quieto.webp`}
+            data-animado={`${base}/avatar/perfil.webp`}
             alt={`Avatar de ${perfil.nombre}`}
-            width={320}
-            height={352}
-            loading="eager"
+            width="400"
+            height="400"
+            fetchpriority="high"
             class="foto"
+            data-testid="foto-perfil"
           />
         </div>
         <div class="terminal vidrio" aria-label="Resultado de las pruebas de este sitio">
@@ -256,6 +258,29 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 </Base>
 
 <script>
+  // Foto de perfil animada: se carga DESPUÉS de que la página terminó de cargar, para no
+  // hacer lento el inicio. Se omite con "reducir movimiento" o con ahorro de datos.
+  const foto = document.querySelector<HTMLImageElement>('[data-animado]');
+  const ahorroDatos = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection?.saveData;
+  if (foto && !ahorroDatos && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const cambiar = async () => {
+      const animada = new Image();
+      animada.src = foto.dataset.animado!;
+      try {
+        await animada.decode();
+        foto.src = animada.src;
+      } catch {
+        /* si falla, se queda la imagen fija */
+      }
+    };
+    const cuandoPuedas = (fn: () => void) =>
+      'requestIdleCallback' in window ? requestIdleCallback(fn, { timeout: 2000 }) : setTimeout(fn, 300);
+    if (document.readyState === 'complete') cuandoPuedas(cambiar);
+    else addEventListener('load', () => cuandoPuedas(cambiar), { once: true });
+  }
+</script>
+
+<script>
   // Globo de chat del avatar de Contacto:
   // en cada voltereta del avatar aparece un torbellino 🌪️ donde va el globo; al terminar
   // la voltereta, el torbellino se recoge, sale el globo y "¡Hablemos!" se escribe letra
@@ -456,9 +481,8 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
     width: 100%;
     height: 100%;
     object-fit: cover;
-    object-position: center 20%;
     border-radius: 50%;
-    background: var(--surface-solid);
+    background: radial-gradient(circle at 50% 35%, #3b1fb8, #1a0d5c 55%, var(--surface-solid));
   }
   @keyframes girar-brillo {
     50% {
